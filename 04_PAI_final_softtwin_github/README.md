@@ -1,6 +1,6 @@
-# SoftTwin — ソフト人工筋肉グリッパの Real↔Sim デジタルツイン（試作）
+# SoftTwin — ソフト人工筋肉グリッパの Real↔Sim デジタルツイン
 
-Physical AI 講座 応用編1 最終課題の**試作スキャフォールド**です。最終提出物は，これをベースにご自身で設計・実装・検証したものにしてください（講座の生成AIポリシーおよびサンプル丸写し禁止の規定に注意）。
+見た目が同じでも柔らかさが違う食品を，柔らかい指で**壊さずにつかむ**ための Physical AI システムです（Physical AI 講座 2026 応用編1 最終課題，isobe_97）。
 
 ## 何をするシステムか
 
@@ -66,12 +66,12 @@ python sim_mujoco/make_demo_video.py
 | 触覚（Isaac Sim） | PhysX の接触レポートから同じ24点のスキンを作る（実機PCで未実行） | `sim/tactile_isaac.py` |
 | アプリ層 | 言葉の指示＋画像 → 対象と把持力クラス（Ollama VLM，予備にキーワード） | `app/instruction.py` |
 | UI | HTTP＋WebSocket ゲートウェイと監視ダッシュボード | `core/ui_server.py`, `ui/dashboard.html` |
-| MCP | Claude から Isaac Sim を操作するブリッジ（Kit 拡張＋MCP サーバ） | `isaac_ext/pai.mcp.bridge`, `mcp_server/isaacsim_mcp.py` |
+| MCP | LLM エージェント（MCP クライアント）から Isaac Sim を操作するブリッジ（Kit 拡張＋MCP サーバ） | `isaac_ext/pai.mcp.bridge`, `mcp_server/isaacsim_mcp.py` |
 
 ## セットアップ（Windows 11）
 
-1. PowerShell で `powershell -ExecutionPolicy Bypass -File tools\bootstrap.ps1` を実行します。Isaac Sim 6.1.0 を `C:\isaacsim` に，ROS 2 Jazzy（pixi）を `C:\pai_ros` に入れます。
-2. `tools\claude_desktop_mcp_snippet.json` の内容を Claude Desktop の設定に追加して，Claude を再起動します（設定 → 開発者 → 構成を編集）。
+1. PowerShell で `powershell -ExecutionPolicy Bypass -File tools\bootstrap.ps1` を実行します。Isaac Sim 5.0（standalone）と ROS 2 Jazzy（pixi，`C:\pai_ros`）を準備します。
+2. MCP クライアント（LLM エージェント）を使う場合は，`tools\bootstrap.ps1` が出力する MCP 設定スニペットをクライアントの設定に追加します。
 3. `tools\launch_sim.bat` を実行します。Zenoh ルータと Isaac Sim（MCP ブリッジと ROS 2 ブリッジを有効化した状態）が起動します。
 
 ## 動かし方（MCP 経由／手動とも同じ）
@@ -94,9 +94,9 @@ pixi run --manifest-path C:\pai_ros\pixi.toml ui
 
 UI は http://localhost:8080/ui/dashboard.html で開きます。
 
-## 正直な注意
+## 制約と今後の課題
 
-- `learning/` の初期データは **合成データ（SyntheticMuscle）**です。実機のログが取れたら `--csv data/real_log_*.csv` で再学習し，レポートには実測値を載せてください。
+- `learning/` の初期データは **合成データ（SyntheticMuscle）**です。実機ログ（`--csv data/real_log_*.csv`）での再学習は今後の課題です。
 - 把持力は**推定値**（関節のたわみ×曲げ剛性÷レバー長）です。真値との比較（PhysX の接触レポート，または実機の荷重計測）は今後の課題です。
 - 物体の位置は，現状シミュレーションの真値を使っています。カメラによる検出に置き換えるのが次の段階です。
 - 物体の柔らかさは MuJoCo の接触パラメータで近似しています（有限要素の変形ではありません）。触覚スキンの特性も仮定値です。
