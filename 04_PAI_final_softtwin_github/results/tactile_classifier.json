@@ -1,0 +1,368 @@
+{
+ "n_train": 294,
+ "n_test": 126,
+ "classes": [
+  "very_fragile",
+  "soft",
+  "fragile",
+  "rigid"
+ ],
+ "models": {
+  "vision": {
+   "accuracy": 0.667,
+   "per_object": {
+    "strawberry": 0.217,
+    "egg": 1.0,
+    "tofu": 1.0,
+    "tomato": 0.389,
+    "bolt": 1.0,
+    "tomato_overripe": 0.727,
+    "sample_strawberry": 0.412
+   },
+   "confusion": [
+    [
+     21,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     8,
+     3,
+     0
+    ],
+    [
+     0,
+     11,
+     32,
+     18
+    ],
+    [
+     0,
+     0,
+     10,
+     23
+    ]
+   ],
+   "features": [
+    "r",
+    "g",
+    "b",
+    "area",
+    "aspect"
+   ]
+  },
+  "touch": {
+   "accuracy": 0.96,
+   "per_object": {
+    "strawberry": 0.826,
+    "egg": 1.0,
+    "tofu": 1.0,
+    "tomato": 1.0,
+    "bolt": 1.0,
+    "tomato_overripe": 1.0,
+    "sample_strawberry": 0.941
+   },
+   "confusion": [
+    [
+     21,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     11,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     57,
+     3
+    ],
+    [
+     0,
+     0,
+     1,
+     32
+    ]
+   ],
+   "features": [
+    "q_contact",
+    "dq",
+    "stiff",
+    "p_contact",
+    "dp",
+    "tax_sum",
+    "n_active",
+    "seg_centroid",
+    "tip_ratio",
+    "settle_steps"
+   ]
+  },
+  "fusion": {
+   "accuracy": 0.976,
+   "per_object": {
+    "strawberry": 0.913,
+    "egg": 1.0,
+    "tofu": 1.0,
+    "tomato": 1.0,
+    "bolt": 1.0,
+    "tomato_overripe": 1.0,
+    "sample_strawberry": 0.941
+   },
+   "confusion": [
+    [
+     21,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     11,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     59,
+     2
+    ],
+    [
+     0,
+     0,
+     1,
+     32
+    ]
+   ],
+   "features": [
+    "r",
+    "g",
+    "b",
+    "area",
+    "aspect",
+    "q_contact",
+    "dq",
+    "stiff",
+    "p_contact",
+    "dp",
+    "tax_sum",
+    "n_active",
+    "seg_centroid",
+    "tip_ratio",
+    "settle_steps"
+   ]
+  }
+ },
+ "force_window": {
+  "very_fragile": [
+   {
+    "F": 0.75,
+    "n": 7,
+    "success": 0.857,
+    "crushed": 0.0,
+    "slipped": 0.143
+   },
+   {
+    "F": 1.25,
+    "n": 9,
+    "success": 0.556,
+    "crushed": 0.444,
+    "slipped": 0.0
+   },
+   {
+    "F": 1.75,
+    "n": 8,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 2.25,
+    "n": 14,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 2.75,
+    "n": 4,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 3.25,
+    "n": 6,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 3.75,
+    "n": 12,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   }
+  ],
+  "soft": [
+   {
+    "F": 0.75,
+    "n": 4,
+    "success": 0.0,
+    "crushed": 0.0,
+    "slipped": 1.0
+   },
+   {
+    "F": 1.25,
+    "n": 12,
+    "success": 0.5,
+    "crushed": 0.0,
+    "slipped": 0.5
+   },
+   {
+    "F": 1.75,
+    "n": 15,
+    "success": 0.133,
+    "crushed": 0.867,
+    "slipped": 0.0
+   },
+   {
+    "F": 2.25,
+    "n": 6,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 2.75,
+    "n": 8,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 3.25,
+    "n": 7,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 3.75,
+    "n": 8,
+    "success": 0.0,
+    "crushed": 1.0,
+    "slipped": 0.0
+   }
+  ],
+  "fragile": [
+   {
+    "F": 0.75,
+    "n": 33,
+    "success": 0.152,
+    "crushed": 0.0,
+    "slipped": 0.848
+   },
+   {
+    "F": 1.25,
+    "n": 23,
+    "success": 0.87,
+    "crushed": 0.0,
+    "slipped": 0.13
+   },
+   {
+    "F": 1.75,
+    "n": 21,
+    "success": 0.952,
+    "crushed": 0.0,
+    "slipped": 0.048
+   },
+   {
+    "F": 2.25,
+    "n": 26,
+    "success": 0.923,
+    "crushed": 0.0,
+    "slipped": 0.077
+   },
+   {
+    "F": 2.75,
+    "n": 35,
+    "success": 0.914,
+    "crushed": 0.0,
+    "slipped": 0.086
+   },
+   {
+    "F": 3.25,
+    "n": 24,
+    "success": 0.667,
+    "crushed": 0.125,
+    "slipped": 0.208
+   },
+   {
+    "F": 3.75,
+    "n": 18,
+    "success": 0.5,
+    "crushed": 0.389,
+    "slipped": 0.111
+   }
+  ],
+  "rigid": [
+   {
+    "F": 0.75,
+    "n": 15,
+    "success": 0.2,
+    "crushed": 0.0,
+    "slipped": 0.8
+   },
+   {
+    "F": 1.25,
+    "n": 23,
+    "success": 0.696,
+    "crushed": 0.0,
+    "slipped": 0.304
+   },
+   {
+    "F": 1.75,
+    "n": 11,
+    "success": 0.727,
+    "crushed": 0.0,
+    "slipped": 0.273
+   },
+   {
+    "F": 2.25,
+    "n": 20,
+    "success": 0.7,
+    "crushed": 0.0,
+    "slipped": 0.3
+   },
+   {
+    "F": 2.75,
+    "n": 18,
+    "success": 0.944,
+    "crushed": 0.0,
+    "slipped": 0.056
+   },
+   {
+    "F": 3.25,
+    "n": 14,
+    "success": 1.0,
+    "crushed": 0.0,
+    "slipped": 0.0
+   },
+   {
+    "F": 3.75,
+    "n": 19,
+    "success": 0.842,
+    "crushed": 0.0,
+    "slipped": 0.158
+   }
+  ]
+ }
+}

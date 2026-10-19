@@ -1,0 +1,67 @@
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{luatexja-fontspec}
+\setmainjfont{Noto Sans CJK JP}
+\setsansfont{Noto Sans CJK JP}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{arrows.meta,calc}
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm,
+  font=\small,
+  blk/.style={draw, rounded corners=3pt, align=center, minimum height=11mm, minimum width=42mm, text width=40mm, fill=white, line width=0.6pt},
+  hl/.style={blk, draw=blue!60!black, fill=blue!7, line width=0.9pt},
+  real/.style={blk, draw=orange!70!black, fill=orange!8},
+  sig/.style={-{Stealth[length=2.2mm]}, line width=0.6pt, preaction={draw=white, line width=3pt, -}},
+  dsig/.style={sig, dashed},
+  lbl/.style={font=\scriptsize, inner sep=1.5pt, fill=white}]
+% rows: A=0, B=-2.6, C=-5.2, D=-7.8 ; cols: 0,4,8,12
+\node[align=center, font=\footnotesize] (txt) at (0.2,0.45) {指示文 $s$（自然言語）};
+\node[align=center, font=\footnotesize] (cam) at (0.2,-0.45) {俯瞰カメラ画像 $I$\\RGB 640$\times$480, 10\,Hz};
+\node[hl] (vlm) at (5,0) {VLM タスク計画器\\Qwen2.5-VL（Ollama）};
+\node[blk] (seq) at (10,0) {タスク系列制御\\（状態機械）};
+\node[hl] (fc) at (15,0) {把持力制御器\\（閉ループ）};
+\node[hl] (fe) at (10,-2.6) {把持力推定器（固有感覚）\\$\hat F_f=\sum_j\tau_j l_j/\sum_j l_j^2$};
+\node[real] (pn) at (15,-2.6) {空圧供給\\ポンプ・電磁弁（M5Stack）};
+\node[blk] (twin) at (5,-5.2) {デジタルツイン（PRBM）\\Isaac Sim / MuJoCo};
+\node[hl] (act) at (10,-5.2) {学習アクチュエータモデル\\$\hat\theta=f_\phi(p,\dot p,\hat\theta_{k-1})$};
+\node[real] (real) at (15,-5.2) {人工筋肉指（実機）\\シリコン曲げアクチュエータ};
+\node[blk, dashed] (learn) at (4.6,-7.8) {オフライン同定\\ログ→LeRobot形式→MLP};
+\node[blk] (eng) at (10,-7.8) {コアエンジン\\同期・誤差・遅延の計測};
+\node[blk] (rmq) at (10,-10.2) {RabbitMQ\\（アプリ層との境界）};
+\node[blk] (ui) at (15,-10.2) {監視 UI\\HTTP / WebSocket};
+\node[hl] (tj) at (20,-2.6) {触覚判定（0.4\,N で触る）\\画像＋触覚の分類器};
+\node[hl] (skin) at (20,-5.2) {布状触覚スキン（指の内側）\\24 点（3指×4節×2）};
+\node[blk, dashed] (ds) at (20,-7.8) {自動アノテーション\\マルチモーダルデータ生成};
+% application layer
+\draw[sig] (txt.east) -- (vlm.west |- txt.east);
+\draw[sig] (cam.east) -- (vlm.west |- cam.east);
+\draw[sig] (vlm) -- node[lbl, above=1pt]{$o,\,c$} (seq);
+\draw[sig] (seq) -- node[lbl, above=1pt]{$F^{*}(c)$} (fc);
+% control loop
+\draw[sig] (fc) -- node[lbl, right]{$p^{\rm cmd}$ [kPa]} (pn);
+\draw[sig] (pn) -- node[lbl, right]{圧力 $p$ [kPa]} (real);
+\draw[sig] ($(pn.south)+(-1.4,0)$) -- ++(0,-1.05) -| node[lbl, pos=0.25, above]{$p$} (act.north);
+\draw[sig] (act) -- node[lbl, below=2pt]{$\theta^{\rm ref}$} (twin);
+\draw[sig] ($(act.north)+(-1.0,0)$) -- node[lbl, left]{$\theta^{\rm ref}$} ($(fe.south)+(-1.0,0)$);
+\draw[sig] ($(twin.north)+(0.6,0)$) |- node[lbl, pos=0.75, above]{関節角 $\mathbf{q}$ [rad]} (fe.west);
+\draw[sig] ($(fe.north)+(1.0,0)$) -- ++(0,0.55) -| node[lbl, pos=0.3, above]{推定把持力 $\hat F$ [N]} ($(fc.south)+(-1.0,0)$);
+\draw[sig] ($(seq.south)+(-1.4,0)$) -- ++(0,-0.6) -| node[lbl, pos=0.3, above]{ガントリ目標 $\mathbf{x}^{\rm ref}$ [m]} ($(twin.north)+(-0.6,0)$);
+\draw[sig] (twin.west) -| node[lbl, pos=0.75, left]{レンダリング} (cam.south);
+% monitoring / learning
+\draw[sig] (real.south) |- node[lbl, pos=0.25, right]{曲げ角 $\theta$ [deg]} (eng.east);
+\draw[sig] ($(twin.south)+(0.6,0)$) -- ++(0,-1.05) -| node[lbl, pos=0.25, above]{$\mathbf{q}$・物体姿勢} ($(eng.north)+(-1.0,0)$);
+\draw[sig] (eng) -- node[lbl, right]{$e,\ \mathrm{RMSE},\ \tau$} (rmq);
+\draw[sig] (rmq) -- (ui);
+\draw[dsig] (eng.west) -- node[lbl, above]{ログ $(t,p,\theta)$} (learn.east);
+\draw[dsig] ($(learn.north)+(-1.2,0)$) -- ++(0,0.95) -| node[lbl, pos=0.3, above]{学習済み重み $\phi$} ($(act.south)+(-1.4,0)$);
+% tactile
+\draw[sig] (real) -- node[lbl, above]{接触} (skin);
+\draw[sig] (skin) -- node[lbl, right]{タクセル $\mathbf{s}$ [N]} (tj);
+\draw[sig] (tj.north) |- node[lbl, pos=0.75, above]{$F^{*}$ を更新} (fc.east);
+\draw[dsig] (skin) -- node[lbl, right]{$I,\mathbf{s},p,\mathbf{q}$＋自動ラベル} (ds);
+\draw[dsig] (ds.east) -- ++(0.5,0) |- node[lbl, pos=0.25, right]{学習済み分類器} (tj.east);
+% legend
+\node[anchor=west, font=\footnotesize, align=left] at (-1.6,-11.5) {%
+\textcolor{blue!60!black}{\rule{3mm}{2.2mm}}~本研究で設計・学習した要素\qquad
+\textcolor{orange!70!black}{\rule{3mm}{2.2mm}}~実機（シミュレーション実験では仮想M5Stack＝合成筋肉モデルで代替）\qquad 破線：オフライン\\[2pt]$s$：指示文\quad $I$：画像\quad $o$：対象物体\quad $c$：脆さクラス\quad $F^{*}$：目標把持力 [N]\quad $\hat F$：推定把持力 [N]\quad $p$：内圧 [kPa]\quad $\hat\theta$：自由曲げ角の予測 [deg]\quad $\theta^{\rm ref}=\hat\theta/N$：関節目標\quad $\mathbf{q}$：関節角\quad $\mathbf{s}$：触覚（24 点）\quad $e$：ツイン誤差\quad $\tau$：遅延};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoftTwin Monitor</title>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --line:#2a2f3a; --ink:#e8eaf0; --mute:#9aa3b2; --real:#e8eaf0; --sim:#4ea1ff; --lin:#ff6b6b; --ok:#3ecf8e; --warn:#f5a524; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  header { display:flex; align-items:baseline; gap:12px; padding:16px 20px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:18px; margin:0; }
+  header .src { color:var(--mute); font-size:12px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--warn); display:inline-block; margin-right:6px; }
+  .dot.on { background:var(--ok); }
+  main { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; padding:16px 20px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .kpi .label { color:var(--mute); font-size:12px; }
+  .kpi .value { font-size:28px; font-weight:600; font-variant-numeric: tabular-nums; }
+  .kpi .unit { color:var(--mute); font-size:13px; margin-left:4px; }
+  .wide { grid-column: span 4; }
+  .half { grid-column: span 2; }
+  canvas { width:100%; height:240px; display:block; }
+  table { width:100%; border-collapse:collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--mute); font-weight:500; font-size:12px; }
+  .legend span { margin-right:14px; font-size:12px; color:var(--mute); }
+  .legend i { display:inline-block; width:14px; height:3px; margin-right:6px; vertical-align:middle; }
+  .note { color:var(--mute); font-size:12px; margin-top:8px; }
+  @media (max-width: 800px) { main { grid-template-columns: repeat(2, minmax(0,1fr)); } .wide, .half { grid-column: span 2; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>SoftTwin Monitor</h1>
+  <span class="src"><span id="dot" class="dot"></span><span id="status">connecting…</span></span>
+</header>
+<main>
+  <div class="card kpi"><div class="label">実機と双子の差（曲げ角）</div><div><span class="value" id="gap">–</span><span class="unit">deg</span></div></div>
+  <div class="card kpi"><div class="label">RMSE 線形モデル</div><div><span class="value" id="rlin">–</span><span class="unit">deg</span></div></div>
+  <div class="card kpi"><div class="label">RMSE 学習モデル</div><div><span class="value" id="rnet">–</span><span class="unit">deg</span></div></div>
+  <div class="card kpi"><div class="label">ループ遅延（中央値）</div><div><span class="value" id="lat">–</span><span class="unit">ms</span></div></div>
+  <div class="card wide">
+    <div class="legend"><span><i style="background:var(--real)"></i>実機の曲げ角</span><span><i style="background:var(--sim)"></i>Isaac Sim の曲げ角</span><span><i style="background:var(--lin)"></i>圧力 (kPa)</span></div>
+    <canvas id="chart"></canvas>
+  </div>
+  <div class="card half">
+    <div class="label" style="color:var(--mute);font-size:12px;margin-bottom:6px">把持ベンチマーク（固定シード）</div>
+    <table id="bench"><thead><tr><th>方式</th><th>試行</th><th>成功率</th><th>破損率</th><th>落下率</th></tr></thead><tbody></tbody></table>
+    <div class="note" id="benchnote"></div>
+  </div>
+  <div class="card half">
+    <div class="label" style="color:var(--mute);font-size:12px;margin-bottom:6px">アクチュエータ同定</div>
+    <table id="ident"><tbody></tbody></table>
+    <div class="note" id="identnote"></div>
+  </div>
+</main>
+<script>
+const N = 300, real = [], sim = [], pres = [];
+const $ = id => document.getElementById(id);
+const fmt = (v, d=1) => (v === null || v === undefined) ? "–" : Number(v).toFixed(d);
+function draw() {
+  const c = $("chart"), dpr = window.devicePixelRatio || 1;
+  c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr;
+  const g = c.getContext("2d"); g.scale(dpr, dpr);
+  const w = c.clientWidth, h = c.clientHeight, pad = 28;
+  g.strokeStyle = "#2a2f3a"; g.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) { const y = pad/2 + (h - pad) * i / 4; g.beginPath(); g.moveTo(pad, y); g.lineTo(w, y); g.stroke(); }
+  const line = (arr, max, color) => {
+    g.strokeStyle = color; g.lineWidth = 1.8; g.beginPath();
+    arr.forEach((v, i) => { if (v === null) return; const x = pad + (w - pad) * i / (N - 1); const y = pad/2 + (h - pad) * (1 - Math.min(v, max) / max); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    g.stroke();
+  };
+  line(pres, 80, getComputedStyle(document.body).getPropertyValue("--lin"));
+  line(real, 140, getComputedStyle(document.body).getPropertyValue("--real"));
+  line(sim, 140, getComputedStyle(document.body).getPropertyValue("--sim"));
+  g.fillStyle = "#9aa3b2"; g.font = "11px sans-serif"; g.fillText("140°", 0, pad/2 + 4); g.fillText("0", 8, h - pad/2 + 4);
+}
+function onMetrics(m) {
+  [ [real, m.real_bend_deg], [sim, m.sim_bend_deg], [pres, m.real_pressure_kpa] ].forEach(([a, v]) => { a.push(v ?? null); if (a.length > N) a.shift(); });
+  $("gap").textContent = fmt(m.twin_gap_deg); $("rlin").textContent = fmt(m.rmse_linear_deg); $("rnet").textContent = fmt(m.rmse_learned_deg); $("lat").textContent = fmt(m.loop_latency_ms, 0);
+  draw();
+}
+function onBench(b) {
+  const tb = $("bench").querySelector("tbody"); tb.innerHTML = "";
+  const label = { open_loop: "開ループ（固定圧）", closed_loop: "閉ループ（推定把持力）" };
+  for (const [k, r] of Object.entries(b.results || {})) {
+    tb.insertAdjacentHTML("beforeend", `<tr><td>${label[k] || k}</td><td>${r.n}</td><td>${(100*r.success_rate).toFixed(0)}%</td><td>${(100*r.crush_rate).toFixed(0)}%</td><td>${(100*r.drop_rate).toFixed(0)}%</td></tr>`);
+  }
+  $("benchnote").textContent = `シード ${b.seeds?.length ?? "–"} 個 × 物体 5 種，アクチュエータ: ${b.actuator}`;
+}
+function onIdent(r) {
+  $("ident").querySelector("tbody").innerHTML = `<tr><td>線形モデル RMSE</td><td>${r.rmse_linear_deg}°</td></tr><tr><td>学習モデル RMSE</td><td>${r.rmse_learned_deg}°</td></tr><tr><td>改善</td><td>${r.improvement_pct}%</td></tr>`;
+  $("identnote").textContent = `データ: ${r.source}`;
+}
+function connect() {
+  const ws = new WebSocket(`ws://${location.hostname || "localhost"}:8765`);
+  ws.onopen = () => { $("dot").classList.add("on"); $("status").textContent = "live"; };
+  ws.onclose = () => { $("dot").classList.remove("on"); $("status").textContent = "再接続中…"; setTimeout(connect, 1500); };
+  ws.onmessage = e => { const d = JSON.parse(e.data); if (d.metrics) onMetrics(d.metrics); if (d.benchmark) onBench(d.benchmark); if (d.identification) onIdent(d.identification); };
+}
+window.addEventListener("resize", draw); draw(); connect();
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+{
+ "source": "synthetic (SyntheticMuscle, NOT real hardware)",
+ "linear_c_deg_per_kpa": 1.6563,
+ "test_trajectories": 16,
+ "per_traj": [
+  {
+   "traj": 64,
+   "rmse_linear_deg": 10.24,
+   "rmse_learned_deg": 2.3
+  },
+  {
+   "traj": 65,
+   "rmse_linear_deg": 13.97,
+   "rmse_learned_deg": 1.61
+  },
+  {
+   "traj": 66,
+   "rmse_linear_deg": 15.31,
+   "rmse_learned_deg": 2.21
+  },
+  {
+   "traj": 67,
+   "rmse_linear_deg": 18.26,
+   "rmse_learned_deg": 2.23
+  },
+  {
+   "traj": 68,
+   "rmse_linear_deg": 11.28,
+   "rmse_learned_deg": 3.06
+  },
+  {
+   "traj": 69,
+   "rmse_linear_deg": 19.69,
+   "rmse_learned_deg": 1.57
+  },
+  {
+   "traj": 70,
+   "rmse_linear_deg": 13.78,
+   "rmse_learned_deg": 1.2
+  },
+  {
+   "traj": 71,
+   "rmse_linear_deg": 20.43,
+   "rmse_learned_deg": 1.8
+  },
+  {
+   "traj": 72,
+   "rmse_linear_deg": 12.95,
+   "rmse_learned_deg": 3.15
+  },
+  {
+   "traj": 73,
+   "rmse_linear_deg": 16.74,
+   "rmse_learned_deg": 2.42
+  },
+  {
+   "traj": 74,
+   "rmse_linear_deg": 12.66,
+   "rmse_learned_deg": 1.93
+  },
+  {
+   "traj": 75,
+   "rmse_linear_deg": 11.56,
+   "rmse_learned_deg": 3.26
+  },
+  {
+   "traj": 76,
+   "rmse_linear_deg": 13.98,
+   "rmse_learned_deg": 2.29
+  },
+  {
+   "traj": 77,
+   "rmse_linear_deg": 14.86,
+   "rmse_learned_deg": 1.47
+  },
+  {
+   "traj": 78,
+   "rmse_linear_deg": 15.09,
+   "rmse_learned_deg": 2.38
+  },
+  {
+   "traj": 79,
+   "rmse_linear_deg": 15.83,
+   "rmse_learned_deg": 2.17
+  }
+ ],
+ "rmse_linear_deg": 14.79,
+ "rmse_learned_deg": 2.19,
+ "improvement_pct": 85.2
+}

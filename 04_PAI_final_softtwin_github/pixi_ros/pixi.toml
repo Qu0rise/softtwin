@@ -1,0 +1,53 @@
+# Minimal ROS 2 Jazzy (RoboStack) environment for the SoftTwin project on Windows.
+# bootstrap.ps1 copies this file to C:\pai_ros\pixi.toml (short path: Windows 260-char limit)
+# and replaces __PAI_REPO__ with the real repo path.
+[workspace]
+name = "pai_ros"
+channels = ["https://prefix.dev/robostack-jazzy", "https://prefix.dev/conda-forge"]
+platforms = ["win-64", "linux-64"]
+
+[dependencies]
+python = "3.12.*"
+ros-jazzy-ros-base = "*"
+ros-jazzy-ros2cli = "*"
+ros-jazzy-rclpy = "*"
+ros-jazzy-rmw-zenoh-cpp = "*"
+ros-jazzy-rmw-fastrtps-cpp = "*"
+ros-jazzy-std-msgs = "*"
+ros-jazzy-sensor-msgs = "*"
+ros-jazzy-geometry-msgs = "*"
+numpy = "*"
+matplotlib = "*"
+pika = "*"
+websockets = "*"
+pillow = "*"
+requests = "*"
+
+[pypi-dependencies]
+mcp = ">=1.20,<2"
+# pure-python MCAP writer (same file format as rosbag2 MCAP storage, see lecture 5)
+mcap = "*"
+mcap-ros2-support = "*"
+
+[activation.env]
+RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
+ROS_DOMAIN_ID = "0"
+ROS_DISTRO = "jazzy"
+KMP_DUPLICATE_LIB_OK = "TRUE"
+PAI_REPO = "__PAI_REPO__"
+PYTHONUTF8 = "1"
+
+[target.win.activation]
+env = { isaac_sim_package_path = "C:\\isaacsim" }
+
+[tasks]
+zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
+mcp = "python $PAI_REPO/mcp_server/isaacsim_mcp.py"
+core = "python $PAI_REPO/core/engine.py"
+virtual_hw = "python $PAI_REPO/core/virtual_m5stack.py"
+ui = "python $PAI_REPO/core/ui_server.py"
+selftest = "python $PAI_REPO/scripts/selftest.py"
+
+[target.win-64.tasks]
+sim = "$isaac_sim_package_path\\isaac-sim.bat --ext-folder $PAI_REPO\\isaac_ext --enable pai.mcp.bridge --/isaac/startup/ros_bridge_extension=isaacsim.ros2.bridge"
+check = "$isaac_sim_package_path\\isaac-sim.compatibility_check.bat"

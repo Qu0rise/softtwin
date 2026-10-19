@@ -1,0 +1,22 @@
+[package]
+version = "0.2.0"
+title = "PAI MCP Bridge"
+description = "Localhost JSON bridge so an MCP server can drive Isaac Sim (exec, timeline, screenshot, stage)."
+authors = ["isobe_97"]
+category = "Tools"
+keywords = ["mcp", "automation", "isaac sim"]
+repository = ""
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.usd" = {}
+"omni.timeline" = {}
+"omni.kit.viewport.utility" = {}
+
+[[python.module]]
+name = "pai.mcp.bridge"
+
+[settings]
+# Bound to 127.0.0.1 only. Change port with --/exts/pai.mcp.bridge/port=XXXX
+exts."pai.mcp.bridge".port = 8766
+exts."pai.mcp.bridge".host = "127.0.0.1"
