@@ -14,7 +14,7 @@
 % Every forward signal runs only to the right or downward (top-left to bottom-right).
 % ================================================================ (a) 判断
 \begin{scope}[shift={(0,0)}]
-\draw[black!45, line width=0.5pt, rounded corners=2pt] (-0.3,2.35) rectangle (17.6,-2.45);
+\draw[black!45, line width=0.5pt] (-0.3,2.35) rectangle (17.6,-2.45);
 \frametitle{-0.3}{2.35}{(a) 判断（把持の前に 1 回）}
 \node[port] (a_in1) at (0.45,1.1) {1};
 \node[pname, anchor=north] at (a_in1.south) {物体 $o$};
@@ -41,7 +41,7 @@
 \end{scope}
 % ================================================================ (b) 把持力制御器
 \begin{scope}[shift={(0,-5.0)}]
-\draw[black!45, line width=0.5pt, rounded corners=2pt] (-0.3,2.35) rectangle (17.6,-1.95);
+\draw[black!45, line width=0.5pt] (-0.3,2.35) rectangle (17.6,-1.95);
 \frametitle{-0.3}{2.35}{(b) 把持力制御器（50 Hz）}
 \node[port] (b_in2) at (0.45,1.15) {2};
 \node[pname, anchor=north] at (b_in2.south) {$\hat{\bm y}$};
@@ -76,7 +76,7 @@
 \end{scope}
 % ================================================================ (c) 推定器
 \begin{scope}[shift={(0,-10.6)}]
-\draw[black!45, line width=0.5pt, rounded corners=2pt] (-0.3,3.25) rectangle (17.6,-2.55);
+\draw[black!45, line width=0.5pt] (-0.3,3.25) rectangle (17.6,-2.55);
 \frametitle{-0.3}{3.25}{(c) 推定器（固有感覚・力センサなし）}
 \node[port] (c_in) at (0.45,0.6) {1};
 \node[pname, anchor=north] at (c_in.south) {$\tilde p,\ \tilde{\bm\theta},\ \tilde{\bm s}$};
@@ -92,11 +92,11 @@
 \node[font=\scriptsize, inner sep=0pt] at ($(s2.west)+(-0.16,-0.2)$) {$+$};
 \node[font=\scriptsize, inner sep=0pt] at ($(s2.north)+(0.2,0.17)$) {$-$};
 \node[des, minimum width=17mm, minimum height=9mm, font=\scriptsize] (gain) at (7.6,-0.8) {$k_b\,\pi/180$};
-\node[des, minimum width=13mm, minimum height=11mm, font=\scriptsize] (div) at (9.65,-0.8) {$u_2/u_1$};
+\node[des, minimum width=13mm, minimum height=11mm, font=\scriptsize] (div) at (9.9,-0.53) {$u_2/u_1$};
 \node[font=\tiny] at ($(div.west)+(0.27,0.27)$) {$\div$};
 \node[font=\tiny] at ($(div.west)+(0.27,-0.27)$) {$\times$};
-\node[des, minimum width=13mm, minimum height=9mm, font=\scriptsize] (relu) at (11.3,-0.8) {$\max(\cdot,0)$};
-\node[des, minimum width=13mm, minimum height=9mm, font=\scriptsize] (sumf) at (12.95,-0.8) {$\sum_{f=1}^{3}$};
+\node[des, minimum width=13mm, minimum height=9mm, font=\scriptsize] (relu) at (11.55,-0.53) {$\max(\cdot,0)$};
+\node[des, minimum width=13mm, minimum height=9mm, font=\scriptsize] (sumf) at (13.15,-0.53) {$\sum_{f=1}^{3}$};
 \node[selbar, minimum height=27mm] (bc) at (14.75,-0.95) {};
 \node[port] (c_out) at (16.55,-0.95) {1};
 \node[pname, anchor=north] at (c_out.south) {$\hat{\bm y}=(\tilde p,\hat F,\kappa)$};
@@ -108,16 +108,16 @@
 \draw[bus] (sb) -- (2.4,1.0) -- (lev.west);
 \draw[sig] (tsum.east) -- (thr.west);
 \draw[sig] (thr.east) -- node[sname, above=1pt, pos=0.5] {$\kappa$} (14.3,2.15) -- (14.3,0.0) -- (bc.west |- 0,0.0);
-\draw[bus] (lev.east) -- (9.0,1.0) -- node[sname, right=1pt, pos=0.5] {$\bar{\bm\Lambda}$} (9.0,-0.53) -- (div.west |- 0,-0.53);
+\draw[bus] (lev.east) -- (8.85,1.0) -- node[sname, left=1pt, pos=0.55] {$\bar{\bm\Lambda}$} (8.85,-0.26) -- (div.west |- 0,-0.26);
 \draw[bus] (cs.east |- 0,0.2) -- node[sname, above=2pt, pos=0.22] {$\tilde{\bm\theta}$（指 3 本）} (6.0,0.2) -- (s2.north);
 \coordinate (pb) at (2.4,-0.8);
 \draw[sig] (cs.east |- pb) -- node[sname, above=1pt, pos=0.4] {$\tilde p$} (fphi.west);
 \node[dot] at (pb) {};
 \draw[sig] (pb) -- (2.4,-1.95) -- (bc.west |- 0,-1.95);
 \draw[sig] (fphi.east) -- (s2.west);
-\node[sname, above=1pt] at ($(fphi.east)!0.45!(s2.west)$) {$\hat\theta^{\mathrm{free}}$};
+\node[sname, above=1pt] at ($(fphi.east)!0.6!(s2.west)$) {$\hat\theta^{\mathrm{free}}$};
 \draw[bus] (s2.east) -- node[sname, above=2pt] {$\Delta\bm\theta$} (gain.west);
-\draw[bus] (gain.east) -- (8.65,-0.8) -- (8.65,-1.07) -- (div.west |- 0,-1.07);
+\draw[bus] (gain.east) -- (div.west |- 0,-0.8);
 \draw[bus] (div.east) -- (relu.west);
 \draw[bus] (relu.east) -- (sumf.west);
 \draw[sig] (sumf.east) -- node[sname, above=1pt] {$\hat F$} (bc.west |- sumf.east);

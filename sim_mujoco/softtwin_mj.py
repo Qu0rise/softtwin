@@ -24,6 +24,7 @@ import mujoco  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import twin_core as C  # noqa: E402
+import visual_assets as VA  # noqa: E402
 from twin_core import (ALL_OBJECTS, BASE_OBJECTS, CFG, CLASSES, HANDLING, LOOKALIKES, OBJECTS, TARGET_FORCE,  # noqa: E402,F401
                        VISUAL_CLASS, VISUAL_ID, Actuator, Supply, half_height, sample_instance)
 
@@ -67,6 +68,9 @@ def quat_z(deg):
     return f"{math.cos(h):.6f} 0 0 {math.sin(h):.6f}"
 
 
+PRETTY = False   # media scripts set this: render-only produce meshes/sepals (no mass, no contacts; physics unchanged)
+
+
 def build_xml(seed=0, objects=BASE_OBJECTS, kb=None, spots=None):
     top = CFG["table_top"]
     hx, hy, hz = CFG["home"]
@@ -79,7 +83,8 @@ def build_xml(seed=0, objects=BASE_OBJECTS, kb=None, spots=None):
         x, y, z = r * math.cos(math.radians(th)), r * math.sin(math.radians(th)), -CFG["palm"][2]
         body = ""
         for k in reversed(range(CFG["n_seg"])):
-            col = f"{0.95:.2f} {0.45 + 0.08 * k:.2f} {0.20:.2f} 1"
+            col = (f"{0.95:.2f} {0.45 + 0.08 * k:.2f} {0.20:.2f} 1" if not PRETTY
+                   else ("0.93 0.93 0.91 1" if k % 2 == 0 else "0.84 0.85 0.84 1"))   # silicone, alternate chambers
             inner = body
             body = (f'<body name="f{f}s{k}" pos="0 0 {-L if k else 0}">'
                     f'<joint name="f{f}j{k}" type="hinge" axis="0 1 0" range="-10 80" damping="{CFG["d_b"]}" armature="0.0002"/>'
@@ -101,9 +106,14 @@ def build_xml(seed=0, objects=BASE_OBJECTS, kb=None, spots=None):
         sref, simp = contact_params(inst, o)
         sx, sy = inst["xy"]
         sz = " ".join(str(v) for v in o.size)
+        look = C.VISUAL_ID.get(base_name(name), base_name(name))       # an overripe fruit looks like the ripe one
+        vis = VA.object_visuals(look, o.size) if PRETTY else ""
+        rgba = ("0 0 0 0" if vis and look == "strawberry" else "0.55 0.045 0.03 1" if PRETTY and look == "tomato"
+                else " ".join(map(str, o.rgba)))
+        mat = ' material="tomato_mat"' if PRETTY and look == "tomato" else ""
         objs.append(f'<body name="{name}" pos="{sx:.4f} {sy:.4f} {top + half_height(name) + 0.001:.4f}" quat="{quat_z(inst["yaw_deg"])}"><freejoint name="{name}_free"/>'
-                    f'<geom name="{name}_g" type="{o.shape}" size="{sz}" mass="{inst["mass"]:.5f}" rgba="{" ".join(map(str, o.rgba))}" '
-                    f'friction="{inst["mu"]:.3f} 0.005 0.0005" condim="4" priority="1" solref="{sref}" solimp="{simp}"/></body>')
+                    f'<geom name="{name}_g" type="{o.shape}" size="{sz}" mass="{inst["mass"]:.5f}" rgba="{rgba}"{mat} '
+                    f'friction="{inst["mu"]:.3f} 0.005 0.0005" condim="4" priority="1" solref="{sref}" solimp="{simp}"/>{vis}</body>')
     tx, ty = CFG["tray"]
     walls = "".join(f'<geom type="box" size="{a}" pos="{b}" rgba="0.15 0.35 0.65 1"/>' for a, b in [
         ("0.09 0.07 0.005", f"{tx} {ty} {top+0.005}"), ("0.005 0.07 0.02", f"{tx-0.09} {ty} {top+0.02}"),
@@ -114,7 +124,7 @@ def build_xml(seed=0, objects=BASE_OBJECTS, kb=None, spots=None):
 <visual><global offwidth="1280" offheight="720"/><quality shadowsize="4096"/><headlight ambient="0.35 0.35 0.35" diffuse="0.5 0.5 0.5"/></visual>
 <asset><texture type="skybox" builtin="gradient" rgb1="0.82 0.86 0.92" rgb2="0.35 0.38 0.45" width="512" height="512"/><texture name="grid" type="2d" builtin="checker" rgb1="0.30 0.31 0.33" rgb2="0.26 0.27 0.29" width="512" height="512"/>
 <material name="grid" texture="grid" texrepeat="8 8" reflectance="0.05"/>
-<material name="wood" rgba="0.62 0.50 0.38 1"/></asset>
+<material name="wood" rgba="0.62 0.50 0.38 1"/>{VA.assets_xml() if PRETTY else ""}</asset>
 <worldbody>
 <light pos="0.6 -0.8 2.2" dir="-0.3 0.4 -1" diffuse="0.8 0.8 0.8" castshadow="true"/>
 <geom type="plane" size="3 3 0.1" material="grid"/>
@@ -127,7 +137,7 @@ def build_xml(seed=0, objects=BASE_OBJECTS, kb=None, spots=None):
   <joint name="slide_y" type="slide" axis="0 1 0" range="-0.35 0.35" damping="40"/>
   <joint name="slide_z" type="slide" axis="0 0 1" range="-0.3 0.2" damping="40"/>
   <inertial pos="0 0 0" mass="0.5" diaginertia="0.002 0.002 0.002"/>
-  <geom type="box" size="{CFG['palm'][0]} {CFG['palm'][1]} {CFG['palm'][2]}" rgba="0.85 0.85 0.88 1" contype="0" conaffinity="0" mass="0"/>
+  <geom type="box" size="{CFG['palm'][0]} {CFG['palm'][1]} {CFG['palm'][2]}" rgba="{'0.62 0.64 0.67 1' if PRETTY else '0.85 0.85 0.88 1'}" contype="0" conaffinity="0" mass="0"/>
   <geom type="cylinder" size="0.012 0.12" pos="0 0 0.13" rgba="0.6 0.6 0.62 1" contype="0" conaffinity="0" mass="0"/>
   <camera name="wrist" pos="-0.018 0 -0.012" xyaxes="1 0 0 0 1 0" fovy="70"/>
   <camera name="track" mode="track" pos="0.03 -0.28 -0.04" xyaxes="0.994 0.107 0 -0.017 0.157 0.987" fovy="44"/>

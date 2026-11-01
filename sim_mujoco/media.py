@@ -20,6 +20,7 @@ import os  # noqa: E402
 os.environ.setdefault("MUJOCO_GL", "egl")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import softtwin_mj as S  # noqa: E402
+S.PRETTY = True                    # render-only produce meshes; physics unchanged
 import twin_core as C  # noqa: E402
 
 REPO = C.REPO
@@ -106,11 +107,12 @@ class ForcePanel:
         return img
 
 
-def side_by_side(a, b, title, lab_a, lab_b, verdict_a, verdict_b, out, fps=15, t_span=None, badge="シミュレーション（MuJoCo）",
+def side_by_side(a, b, title, lab_a, lab_b, verdict_a, verdict_b, out, fps=15, t_span=None, badge="MuJoCo",
                  badge_b=None, ymax=4.0, target=None, fmax=None, gif=True):
     fw, fh = a["frames"][0].shape[1], a["frames"][0].shape[0]
     ph = 150
-    W, H = 2 * fw + 12, 54 + fh + ph + 8
+    W, H = 2 * fw + 12, 74 + fh + ph + 8
+    top = 74                                                          # title row 0..44 (cut in the video), label row 44..72
     t0 = min(e["t"] for e in a["log"] if e["phase"] == "grip") - 1.0 if t_span is None else t_span[0]
     t1 = max(a["t"][-1], b["t"][-1]) if t_span is None else t_span[1]
     fmax = C.OBJECTS[a["name"]].fmax if fmax is None else fmax
@@ -127,18 +129,14 @@ def side_by_side(a, b, title, lab_a, lab_b, verdict_a, verdict_b, out, fps=15, t
         for k, (run, lab, verdict, panel, bdg) in enumerate(((a, lab_a, verdict_a, pa, badge), (b, lab_b, verdict_b, pb, badge_b or badge))):
             x0 = k * (fw + 12)
             i = int(np.clip(np.searchsorted(run["t"], t), 0, len(run["frames"]) - 1))
-            img.paste(Image.fromarray(run["frames"][i]), (x0, 44))
-            dd = ImageDraw.Draw(img, "RGBA")
-            dd.rounded_rectangle((x0 + 8, 52, x0 + 16 + dd.textlength(lab, font=font(16, True)), 78), 6, fill=(255, 255, 255, 215))
-            dd.text((x0 + 12, 54), lab, font=font(16, True), fill=INK)
-            dd.rounded_rectangle((x0 + 8, 44 + fh - 30, x0 + 16 + dd.textlength(bdg, font=font(12)), 44 + fh - 8), 5, fill=(10, 12, 18, 160))
-            dd.text((x0 + 12, 44 + fh - 28), bdg, font=font(12), fill=(235, 235, 235))
+            img.paste(Image.fromarray(run["frames"][i]), (x0, top))
+            d.text((x0 + 2, top - 6), lab, font=font(17, True), fill=INK, anchor="ls")
+            lw = d.textlength(lab, font=font(17, True))
+            d.text((x0 + lw + 14, top - 7), bdg, font=font(12), fill=MUTE, anchor="ls")
             if t >= t1 - 2.5 and verdict:
                 col = CRIT if verdict.startswith("破損") or verdict.startswith("落下") else OK
-                tw = dd.textlength(verdict, font=font(22, True))
-                dd.rounded_rectangle((x0 + fw - tw - 26, 52, x0 + fw - 8, 86), 7, fill=col + (230,))
-                dd.text((x0 + fw - tw - 17, 54), verdict, font=font(22, True), fill=(255, 255, 255))
-            img.paste(panel.at(t), (x0, 44 + fh + 6))
+                d.text((x0 + fw - 2, top - 6), verdict, font=font(17, True), fill=col, anchor="rs")
+            img.paste(panel.at(t), (x0, top + fh + 6))
         img.save(tmp / f"f_{n:04d}.png")
         n += 1
     mp4 = out.with_suffix(".mp4")
@@ -189,7 +187,7 @@ def physx_clip(seed=0, name="tomato"):
     fmax = C.OBJECTS[name].fmax
     return side_by_side(a, b, f"普通の中玉トマト（許容 {fmax:g} N）を目標 2.2 N で：同じ制御コア・同じ個体", "MuJoCo",
                         "Isaac Sim 5.0 / PhysX", verdict(a["r"]), verdict(rb), MEDIA / "sim2sim_tomato.gif",
-                        badge="シミュレーション（MuJoCo）", badge_b="PhysX の計算結果を MuJoCo の描画器で表示", ymax=5.5, target=2.2)
+                        badge="", badge_b="姿勢は PhysX、描画は MuJoCo", ymax=5.5, target=2.2)
 
 
 def teaser(seed=1, out=REPO / "docs" / "figures" / "teaser.png"):

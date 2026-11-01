@@ -41,7 +41,8 @@ python scripts/make_figures.py        # 図（docs/figures/）
 | `python sim_mujoco/tactile_dataset.py bench --seeds 30` | 約 15 分 | `results/benchmark_lookalike.json`（Q2） |
 | `python sim_mujoco/tactile_dataset.py bench --seeds 30 --seed0 30 --out results/benchmark_lookalike_holdout.json` | 約 15 分 | 開発に使っていないシードでの Q2 |
 | `python sim_mujoco/media.py` | 約 10 分 | `media/*.gif`、`media/*.mp4`、図 1 |
-| `python sim_mujoco/make_video.py` | 約 6 分 | `media/softtwin_demo.mp4`（提出動画）と章の時刻 |
+| `python sim_mujoco/narration.py` | 約 1 分 | `media/narration/*.wav`（ナレーション。VOICEVOX engine 0.24 を `127.0.0.1:50021` で起動しておく。声は No.7、読みの確認は `--check`） |
+| `python sim_mujoco/make_video.py` | 約 6 分 | `media/softtwin_demo.mp4`（提出動画、ナレーションと BGM 入り）と章の時刻 |
 
 ## PhysX（Isaac Sim 5.0、Windows、約 3 時間）
 

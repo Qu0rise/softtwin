@@ -142,14 +142,14 @@ def fig_actuator():
         if t[min(a1, len(t) - 1)] - t[a0] >= 0.5:             # mark the longer stretches only
             bx.axvspan(t[a0], t[min(a1, len(t) - 1)], color=SER[3], alpha=0.14, lw=0)
     bx.axhline(0, color=INK, lw=1.0)
-    for k, c, lab in (("static", SER[4], "静特性の表"), ("greybox", SER[2], "グレーボックス"), ("greybox_play", SER[2], "同・遊びつき"),
+    for k, c, lab in (("static", SER[4], "静特性の表"), ("greybox", SER[2], "グレーボックス"), ("greybox_play", SER[2], "グレーボックス＋遊び"),
                       ("learned", SER[0], "学習モデル")):
         a = C.Actuator(k)
         y = np.array([a(x, 0.02) for x in p])
         bx.plot(t, y - truth, color=c, lw=1.4, ls=":" if k == "greybox_play" else "-",
                 label=f"{lab}（{ac[k]['grasp_bias_deg']:+.1f}°）".replace("-", "\u2212"))
     bx.plot([], [], color=SER[1], lw=1.4, ls="--", label=f"直線モデル（{ac['affine']['grasp_bias_deg']:+.1f}°，枠外）".replace("-", "\u2212"))
-    bx.text(t[edges[0]] + 0.1, 5.3, "把持の内圧域で増圧・保持中（黄）", fontsize=8, color=INK2)
+    bx.text(0.7, -5.4, "網掛け：把持の内圧域で増圧・保持中", fontsize=8, color=INK2, va="center")
     bx.set_xlabel("時間 [s]")
     bx.set_ylabel("自由曲げの誤差（モデル − 真値）[°]")
     bx.set_ylim(-6, 6)
@@ -221,7 +221,7 @@ def fig_force_trace(seed=0, name="strawberry"):
         ax.axhline(C.HANDLING[C.OBJECTS[name].cls]["target"], color=MUTE, lw=0.9, ls=":")
         ax.text(0.2, C.HANDLING[C.OBJECTS[name].cls]["target"] - 0.2, "目標 2.2 N", color=INK2, fontsize=7.5)
         ax.plot(t - t0, ft, color=INK, lw=1.8, label="真の把持力（シミュレータ）")
-        ax.plot(t - t0, fe, color=SER[0], lw=1.4, label="推定値（指の曲げと内圧）")
+        ax.plot(t - t0, fe, color=SER[0], lw=1.4, label="推定値（力センサなし）")
         verdict = "破損" if r["crushed"] else ("成功" if r["success"] else r["failure"])
         ax.set_title(f"{lab}：{verdict}（最大 {r['peak_force_true']:.2f} N）", loc="left", fontsize=9.5,
                      color=CRIT if r["crushed"] else (OK if r["success"] else INK))
@@ -430,11 +430,12 @@ def fig_force_window():
             k_ok, k_cr, _ = ss["summary"][f"closed_learned@{s_:g}"]["by_object"][o]
             frac = k_ok / ss["seeds"]
             ax.scatter([s_], [h["target"]], s=70, color=plt.cm.RdYlGn(frac), edgecolor=INK, lw=0.6, zorder=5)
-            ax.annotate(f"{k_ok}/{ss['seeds']}", (s_, h["target"]), xytext=(0, -14), textcoords="offset points", ha="center", fontsize=8)
+            ax.annotate(f"{k_ok}/{ss['seeds']}", (s_, h["target"]), xytext=(0, -15), textcoords="offset points", ha="center", fontsize=8,
+                        bbox=dict(boxstyle="square,pad=0.12", fc="white", ec="none", alpha=0.9), zorder=6)
             r_ok, r_cr, _ = ss["summary"][f"open_loop_recipe@{s_:g}"]["by_object"][o]
             if r_cr:
                 ax.annotate(f"内圧表：破損 {r_cr}", (s_, h["limit"]), xytext=(-4, 6), textcoords="offset points", ha="right",
-                            fontsize=8, color=CRIT)
+                            fontsize=8, color=CRIT, bbox=dict(boxstyle="square,pad=0.12", fc="white", ec="none", alpha=0.9), zorder=6)
         ax.set_title(OBJ_LABEL.get(o, o), fontsize=10)
         ax.set_xlabel("寸法の倍率 s")
         ax.set_xlim(0.7, 1.3)
