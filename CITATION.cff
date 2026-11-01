@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "SoftTwin: grasping look-alike soft foods without crushing them (a soft pneumatic gripper simulated in MuJoCo and Isaac Sim / PhysX)"
+message: "If you use this code or dataset, please cite it."
+authors:
+  - alias: Qu0rise
+version: 2.0.0
+date-released: 2026-10-30
+license: Apache-2.0
+repository-code: "https://github.com/Qu0rise/softtwin"

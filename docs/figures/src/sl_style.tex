@@ -1,0 +1,17 @@
+% Simulink-style drawing conventions shared by the block diagrams
+\usetikzlibrary{arrows.meta,calc,positioning}
+\tikzset{
+  >={Latex[length=2.1mm,width=1.5mm]},
+  blk/.style={draw, line width=0.55pt, fill=white, rectangle, align=center, inner sep=2pt},
+  des/.style={blk, fill=blue!6, draw=blue!55!black},
+  phy/.style={blk, fill=orange!9, draw=orange!70!black},
+  sen/.style={blk, fill=orange!4, draw=orange!70!black, dashed},
+  port/.style={draw, line width=0.55pt, rounded corners=2.5mm, minimum width=9mm, minimum height=5mm, fill=white, font=\footnotesize\bfseries},
+  sumc/.style={draw, circle, line width=0.55pt, minimum size=5.2mm, inner sep=0pt, fill=white},
+  sig/.style={->, line width=0.55pt},
+  bus/.style={->, line width=1.5pt},
+  sname/.style={font=\scriptsize, inner sep=1pt, fill=white},
+  pname/.style={font=\scriptsize, inner sep=1pt, text=black!75},
+  title/.style={font=\footnotesize\bfseries, inner sep=0pt},
+  dot/.style={circle, fill, inner sep=0pt, minimum size=1.6mm},
+}

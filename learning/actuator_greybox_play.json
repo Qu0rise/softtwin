@@ -1,0 +1,12 @@
+{
+ "params": {
+  "p0": 6.1464,
+  "A": 92.7651,
+  "P": 25.3331,
+  "B": 0.3887,
+  "tau": 0.1188,
+  "w": 4.9014
+ },
+ "source": "synthetic (SyntheticMuscle, NOT real hardware)",
+ "model": "grey box + play operator of width w (6 parameters)"
+}

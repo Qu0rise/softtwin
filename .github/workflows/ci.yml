@@ -1,0 +1,22 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q libosmesa6
+          pip install -r requirements.txt pytest ruff
+      - name: Lint
+        run: ruff check .
+      - name: Unzip dataset
+        run: test -d data/tactile_dataset/episodes || unzip -n -q data/tactile_dataset.zip -d data/
+      - name: Tests (core, dataset validator, metrics recompute, MuJoCo episode, ROS 2 node with stand-ins)
+        run: pytest -q

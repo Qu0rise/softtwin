@@ -1,0 +1,58 @@
+{
+ "m_finger": 0.05389234506901073,
+ "d": 0.9,
+ "m_plunger": 0.011728352098786608,
+ "plunger_measured_ratio": {
+  "strawberry": 1.003,
+  "tofu": 1.025,
+  "tomato": 1.0,
+  "tomato_overripe": 1.001,
+  "strawberry_overripe": 1.001
+ },
+ "correction": {
+  "strawberry": 0.9563,
+  "tofu": 1.0866,
+  "tomato": 1.0051,
+  "tomato_overripe": 1.0004,
+  "strawberry_overripe": 0.9624
+ },
+ "measured": {
+  "strawberry": {
+   "k_target": 1000.0,
+   "k_measured_median": 1020.4,
+   "ratio_to_instance": 1.0,
+   "n_samples": 1765
+  },
+  "tofu": {
+   "k_target": 500.0,
+   "k_measured_median": 513.5,
+   "ratio_to_instance": 0.999,
+   "n_samples": 1016
+  },
+  "tomato": {
+   "k_target": 1500.0,
+   "k_measured_median": 1681.7,
+   "ratio_to_instance": 1.0,
+   "n_samples": 1594
+  },
+  "tomato_overripe": {
+   "k_target": 600.0,
+   "k_measured_median": 687.7,
+   "ratio_to_instance": 0.999,
+   "n_samples": 1627
+  },
+  "strawberry_overripe": {
+   "k_target": 400.0,
+   "k_measured_median": 419.4,
+   "ratio_to_instance": 0.999,
+   "n_samples": 1974
+  }
+ },
+ "plunger_correction": {
+  "strawberry": 0.9886,
+  "tofu": 4.1801,
+  "tomato": 1.0359,
+  "tomato_overripe": 1.0279,
+  "strawberry_overripe": 0.9906
+ }
+}

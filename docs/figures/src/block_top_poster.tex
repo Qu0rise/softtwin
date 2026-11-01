@@ -1,0 +1,57 @@
+\documentclass[tikz,border=4pt]{standalone}
+\usepackage{luatexja-fontspec}
+\setmainjfont{Noto Sans CJK JP}
+\setsansfont{TeX Gyre Heros}
+\setsansjfont{Noto Sans CJK JP}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{amsmath,bm}
+\input{sl_style.tex}
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\tikzset{sname/.append style={font=\large}, pname/.append style={font=\large}, title/.append style={font=\LARGE\bfseries}, port/.append style={font=\large\bfseries, minimum width=11mm, minimum height=6.5mm}}
+\def\bw{24mm}\def\bh{20mm}
+% ---------------------------------------------------------------- blocks: a staircase from top-left to bottom-right,
+% so that every forward signal runs only to the right (the feedback is the one line that has to go back)
+\def\yA{0}\def\yB{-1.2}\def\yC{-2.4}\def\yD{-3.6}\def\yE{-4.8}
+\node[des, minimum width=\bw, minimum height=\bh] (A) at (3.2,\yA) {};
+\node[des, minimum width=\bw, minimum height=\bh] (B) at (7.2,\yB) {};
+\node[phy, minimum width=\bw, minimum height=\bh] (C) at (11.2,\yC) {};
+\node[sen, minimum width=\bw, minimum height=\bh] (D) at (15.2,\yD) {};
+\node[des, minimum width=\bw, minimum height=\bh] (E) at (19.2,\yE) {};
+% block texts (title + body), kept inside the block
+\def\body#1#2#3{\node[font=\large, align=center, text width=23mm] at (#1,#2-0.35) {#3};}
+\node[title] at (3.2,\yA+0.45) {判断};          \body{3.2}{\yA}{画像・押す\\→ $\hat c$}
+\node[title] at (7.2,\yB+0.45) {制御器};  \body{7.2}{\yB}{積分則\\50\,Hz}
+\node[title] at (11.2,\yC+0.45) {プラント};     \body{11.2}{\yC}{MuJoCo\\PhysX}
+\node[title] at (15.2,\yD+0.45) {センサ};       \body{15.2}{\yD}{内圧・曲げ\\スキン}
+\node[title] at (19.2,\yE+0.45) {推定器};       \body{19.2}{\yE}{力センサ\\なし}
+% ---------------------------------------------------------------- ports
+\node[port] (in1) at (0.45,1.9) {1};
+\node[pname, anchor=north] at (in1.south) {物体 $o$};
+\node[port] (in2) at (0.45,-0.5) {2};
+\node[pname, anchor=north] at (in2.south) {取扱い表 $H$};
+\node[port] (out1) at (22.4,-1.8) {1};
+\node[pname, anchor=north] at (out1.south) {物体の状態};
+\node[port] (out2) at (22.4,\yE) {2};
+\node[pname, anchor=north] at (out2.south) {推定値 $\hat{\bm y}$};
+% ---------------------------------------------------------------- signals (forward: right or down only)
+\coordinate (b1) at (1.4,1.9);
+\draw[-, line width=0.55pt] (in1.east) -- (b1);
+\node[dot] at (b1) {};
+\draw[sig] (b1) -- (1.4,0.5) -- (A.west |- 0,0.5);
+\draw[sig] (b1) -- (11.2,1.9) -- (C.north);
+\node[sname, anchor=south] at (6.3,1.9) {物体 $o$};
+\draw[sig] (in2.east) -- (A.west |- in2.east);
+\draw[bus] (A.east |- 0,-0.6) -- node[sname, above=2pt] {$F^{*},\,\bar F$} (B.west |- 0,-0.6);
+\draw[sig] (B.east |- 0,-1.8) -- node[sname, above=1pt] {$p^{\mathrm{cmd}}$} (C.west |- 0,-1.8);
+\draw[bus] (C.east |- 0,-3.0) -- node[sname, above=2pt] {$p,\bm\theta,\bm f_c$} (D.west |- 0,-3.0);
+\draw[bus] (D.east |- 0,-4.2) -- node[sname, above=2pt] {$\tilde p,\tilde{\bm\theta},\tilde{\bm s}$} (E.west |- 0,-4.2);
+\draw[sig] (C.east |- 0,-1.8) -- node[sname, above=1pt, pos=0.5] {} (out1.west);
+% output and feedback (bus)
+\coordinate (b2) at (21.15,\yE);
+\draw[bus] (E.east) -- (out2.west);
+\node[dot] at (b2) {};
+\draw[bus] (b2) -- (21.15,-6.3) -- (5.55,-6.3) -- (5.55,-1.8) -- (B.west |- 0,-1.8);
+\node[sname, anchor=north] at (13.35,-6.35) {帰還は推定値 $\hat{\bm y}$ だけ};
+\end{tikzpicture}
+\end{document}

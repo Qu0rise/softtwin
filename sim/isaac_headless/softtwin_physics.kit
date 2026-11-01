@@ -1,0 +1,18 @@
+[package]
+title = "SoftTwin headless physics (no renderer)"
+version = "0.1.0"
+
+[dependencies]
+"omni.kit.pip_archive" = {}
+"omni.usd" = {}
+"omni.physx" = {}
+"omni.physics.stageupdate" = {}
+"omni.physics.tensors" = {}
+"omni.physx.tensors" = {}
+"omni.kit.async_engine" = {}
+"omni.kit.loop-isaac" = {}
+
+[settings]
+app.window.enabled = false
+app.content.emptyStageOnStart = true
+exts."omni.kit.registry.nucleus".registries = []

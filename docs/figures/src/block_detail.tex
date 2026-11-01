@@ -1,0 +1,127 @@
+\documentclass[tikz,border=4pt]{standalone}
+\usepackage{luatexja-fontspec}
+\setmainjfont{Noto Sans CJK JP}
+\setsansfont{TeX Gyre Heros}
+\setsansjfont{Noto Sans CJK JP}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{amsmath,bm}
+\input{sl_style.tex}
+\tikzset{selbar/.style={draw, fill=black, minimum width=1.2mm, inner sep=0pt}}
+\newcommand{\frametitle}[3]{% x0,y0 of the frame's top-left corner, title
+  \node[font=\footnotesize\bfseries, anchor=north west, fill=white, inner sep=2pt] at (#1+0.15,#2-0.08) {#3};}
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm]
+% Every forward signal runs only to the right or downward (top-left to bottom-right).
+% ================================================================ (a) 判断
+\begin{scope}[shift={(0,0)}]
+\draw[black!45, line width=0.5pt, rounded corners=2pt] (-0.3,2.35) rectangle (17.6,-2.45);
+\frametitle{-0.3}{2.35}{(a) 判断（把持の前に 1 回）}
+\node[port] (a_in1) at (0.45,1.1) {1};
+\node[pname, anchor=north] at (a_in1.south) {物体 $o$};
+\node[port] (a_in2) at (0.45,-1.45) {2};
+\node[pname, anchor=north] at (a_in2.south) {取扱い表 $H$};
+\node[sen, minimum width=29mm, minimum height=9mm, font=\scriptsize] (cam) at (3.6,1.1) {手先カメラ RGB-D\\（把持の直前）};
+\node[sen, minimum width=29mm, minimum height=9mm, font=\scriptsize] (pl) at (3.6,-0.2) {硬さプランジャ\\8\,mm 平型／0.3\,N まで};
+\node[des, minimum width=24mm, minimum height=9mm, font=\scriptsize] (vf) at (6.9,1.1) {視覚特徴\\色 3・面積・縦横比};
+\node[des, minimum width=24mm, minimum height=19mm, font=\scriptsize] (clf) at (10.3,0.45) {\textbf{分類器}\\多クラス\\ロジスティック回帰\\4 区分};
+\node[des, minimum width=30mm, minimum height=14mm, inner xsep=2.2mm, font=\scriptsize] (tab) at (14.1,-1.1) {\textbf{取扱い表}\\$F^{*}=H_{\mathrm{t}}(\hat c)$\\$\bar F=\max(0.8\,H_{\mathrm{lim}}(\hat c),F^{*})$};
+\node[port] (a_out) at (16.8,-1.1) {1};
+\node[pname, anchor=north] at (a_out.south) {$F^{*},\ \bar F$};
+\coordinate (ab) at (1.6,1.1);
+\draw[-, line width=0.55pt] (a_in1.east) -- (ab);
+\node[dot] at (ab) {};
+\draw[sig] (ab) -- (cam.west);
+\draw[sig] (ab) -- (1.6,-0.2) -- (pl.west);
+\draw[sig] (cam.east) -- node[sname, above=1pt] {$I$} (vf.west);
+\draw[bus] (vf.east) -- node[sname, above=2pt] {$\bm v$} (clf.west |- vf.east);
+\draw[bus] (pl.east) -- node[sname, above=2pt, pos=0.6] {$k_p,\ z_{\mathrm{top}},\ d$} (clf.west |- pl.east);
+\draw[sig] (clf.east |- 0,0.45) -- node[sname, above=1pt] {$\hat c$} (12.05,0.45) -- (12.05,-0.75) -- (tab.west |- 0,-0.75);
+\draw[sig] (a_in2.east) -- (tab.west |- 0,-1.45);
+\draw[bus] (tab.east) -- (a_out.west);
+\end{scope}
+% ================================================================ (b) 把持力制御器
+\begin{scope}[shift={(0,-5.0)}]
+\draw[black!45, line width=0.5pt, rounded corners=2pt] (-0.3,2.35) rectangle (17.6,-1.95);
+\frametitle{-0.3}{2.35}{(b) 把持力制御器（50 Hz）}
+\node[port] (b_in2) at (0.45,1.15) {2};
+\node[pname, anchor=north] at (b_in2.south) {$\hat{\bm y}$};
+\node[selbar, minimum height=14mm] (bs) at (1.7,1.15) {};
+\node[port] (b_in1) at (0.45,-0.6) {1};
+\node[pname, anchor=north] at (b_in1.south) {$F^{*}$};
+\node[sumc] (s1) at (3.4,-0.6) {};
+\node[font=\scriptsize, inner sep=0pt] at ($(s1.west)+(-0.16,0.2)$) {$+$};
+\node[font=\scriptsize, inner sep=0pt] at ($(s1.north)+(0.2,0.17)$) {$-$};
+\node[des, minimum width=38mm, minimum height=14mm, text width=35mm, font=\scriptsize, align=left] (rate) at (6.6,-0.75)
+  {内圧の変化率 $\dot p^{\mathrm{cmd}}$ [kPa/s]\\$\kappa=0$：$12$\\$\kappa=1$：$\mathrm{clip}(K_i e,\,-15,\,3)$};
+\node[des, minimum width=26mm, minimum height=16mm] (int) at (11.3,-0.6) {};
+\node[font=\small] at (11.3,-0.55) {$\dfrac{1}{s}$};
+\node[pname] at (11.3,-1.2) {0〜80\,kPa};
+\draw[line width=0.5pt] (12.15,0.05) -- (12.45,0.05) -- (12.45,-0.1); \draw[line width=0.5pt] (12.15,-1.25) -- (12.45,-1.25) -- (12.45,-1.1);
+\node[pname] at (10.55,-0.05) {リセット};
+\node[pname] at (12.0,-0.05) {$x_0$};
+\node[port] (b_out) at (16.8,-0.6) {1};
+\node[pname, anchor=north] at (b_out.south) {$p^{\mathrm{cmd}}$};
+% signals
+\draw[bus] (b_in2.east) -- (bs.west);
+\draw[sig] (bs.east |- 0,1.6) -- node[sname, above=1pt, pos=0.62] {$\tilde p$（接触した瞬間の内圧から積分を再開）} (12.0,1.6) -- (12.0,0.2);
+\draw[sig] (bs.east |- 0,1.15) -- node[sname, above=0pt, pos=0.12] {$\kappa$} (10.55,1.15) -- (10.55,0.2);
+\coordinate (kb) at (6.6,1.15);
+\node[dot] at (kb) {};
+\draw[sig] (kb) -- (rate.north);
+\draw[sig] (bs.east |- 0,0.7) -- node[sname, above=0pt, pos=0.4] {$\hat F$} (3.4,0.7) -- (s1.north);
+\draw[sig] (b_in1.east) -- (s1.west);
+\draw[sig] (s1.east) -- node[sname, above=1pt] {$e$} (rate.west |- s1.east);
+\draw[sig] (rate.east |- 0,-0.6) -- node[sname, above=1pt, pos=0.45] {$\dot p^{\mathrm{cmd}}$} (int.west |- 0,-0.6);
+\draw[sig] (int.east |- 0,-0.6) -- (b_out.west);
+\end{scope}
+% ================================================================ (c) 推定器
+\begin{scope}[shift={(0,-10.6)}]
+\draw[black!45, line width=0.5pt, rounded corners=2pt] (-0.3,3.25) rectangle (17.6,-2.55);
+\frametitle{-0.3}{3.25}{(c) 推定器（固有感覚・力センサなし）}
+\node[port] (c_in) at (0.45,0.6) {1};
+\node[pname, anchor=north] at (c_in.south) {$\tilde p,\ \tilde{\bm\theta},\ \tilde{\bm s}$};
+\node[selbar, minimum height=37mm] (cs) at (1.5,0.6) {};
+% row 0 (y = 2.15): skin -> contact flag
+\node[des, minimum width=26mm, minimum height=9mm, font=\scriptsize] (tsum) at (5.0,2.15) {スキンの合計\\$\sum_{i=1}^{24}\tilde s_i$};
+\node[des, minimum width=17mm, minimum height=9mm, font=\scriptsize] (thr) at (8.3,2.15) {しきい値\\$>0.10$\,N};
+% row 1 (y = 1.0): lever sum weighted by the skin
+\node[des, minimum width=40mm, minimum height=10mm, font=\scriptsize] (lev) at (6.2,1.0) {てこの和の重み付き平均\\$\bar\Lambda_f=\sum_i w_i\Lambda(\sigma_i)$\\（合計 $<0.05$\,N なら指先）};
+% row 3 (y = -0.8): bend deficit -> force
+\node[des, minimum width=22mm, minimum height=9mm, font=\scriptsize] (fphi) at (4.1,-0.8) {筋肉モデル $f_\phi$\\（学習・自己回帰）};
+\node[sumc] (s2) at (6.0,-0.8) {};
+\node[font=\scriptsize, inner sep=0pt] at ($(s2.west)+(-0.16,-0.2)$) {$+$};
+\node[font=\scriptsize, inner sep=0pt] at ($(s2.north)+(0.2,0.17)$) {$-$};
+\node[des, minimum width=17mm, minimum height=9mm, font=\scriptsize] (gain) at (7.6,-0.8) {$k_b\,\pi/180$};
+\node[des, minimum width=13mm, minimum height=11mm, font=\scriptsize] (div) at (9.65,-0.8) {$u_2/u_1$};
+\node[font=\tiny] at ($(div.west)+(0.27,0.27)$) {$\div$};
+\node[font=\tiny] at ($(div.west)+(0.27,-0.27)$) {$\times$};
+\node[des, minimum width=13mm, minimum height=9mm, font=\scriptsize] (relu) at (11.3,-0.8) {$\max(\cdot,0)$};
+\node[des, minimum width=13mm, minimum height=9mm, font=\scriptsize] (sumf) at (12.95,-0.8) {$\sum_{f=1}^{3}$};
+\node[selbar, minimum height=27mm] (bc) at (14.75,-0.95) {};
+\node[port] (c_out) at (16.55,-0.95) {1};
+\node[pname, anchor=north] at (c_out.south) {$\hat{\bm y}=(\tilde p,\hat F,\kappa)$};
+% signals: the selector hands s (top), theta (middle), p (bottom), so that nothing has to cross
+\draw[bus] (c_in.east) -- (cs.west);
+\coordinate (sb) at (2.4,2.15);
+\draw[bus] (cs.east |- sb) -- node[sname, above=2pt, pos=0.45] {$\tilde{\bm s}$} (tsum.west);
+\node[dot] at (sb) {};
+\draw[bus] (sb) -- (2.4,1.0) -- (lev.west);
+\draw[sig] (tsum.east) -- (thr.west);
+\draw[sig] (thr.east) -- node[sname, above=1pt, pos=0.5] {$\kappa$} (14.3,2.15) -- (14.3,0.0) -- (bc.west |- 0,0.0);
+\draw[bus] (lev.east) -- (9.0,1.0) -- node[sname, right=1pt, pos=0.5] {$\bar{\bm\Lambda}$} (9.0,-0.53) -- (div.west |- 0,-0.53);
+\draw[bus] (cs.east |- 0,0.2) -- node[sname, above=2pt, pos=0.22] {$\tilde{\bm\theta}$（指 3 本）} (6.0,0.2) -- (s2.north);
+\coordinate (pb) at (2.4,-0.8);
+\draw[sig] (cs.east |- pb) -- node[sname, above=1pt, pos=0.4] {$\tilde p$} (fphi.west);
+\node[dot] at (pb) {};
+\draw[sig] (pb) -- (2.4,-1.95) -- (bc.west |- 0,-1.95);
+\draw[sig] (fphi.east) -- (s2.west);
+\node[sname, above=1pt] at ($(fphi.east)!0.45!(s2.west)$) {$\hat\theta^{\mathrm{free}}$};
+\draw[bus] (s2.east) -- node[sname, above=2pt] {$\Delta\bm\theta$} (gain.west);
+\draw[bus] (gain.east) -- (8.65,-0.8) -- (8.65,-1.07) -- (div.west |- 0,-1.07);
+\draw[bus] (div.east) -- (relu.west);
+\draw[bus] (relu.east) -- (sumf.west);
+\draw[sig] (sumf.east) -- node[sname, above=1pt] {$\hat F$} (bc.west |- sumf.east);
+\draw[bus] (bc.east) -- (c_out.west);
+\end{scope}
+\end{tikzpicture}
+\end{document}

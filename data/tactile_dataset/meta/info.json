@@ -1,0 +1,297 @@
+{
+ "name": "softtwin_tactile_grasp",
+ "version": "2.0.0",
+ "license": "CC-BY-4.0",
+ "robot": "3-finger soft pneumatic gripper (PRBM, 4 segments per finger) on a 3-axis gantry, with a firmness plunger in the palm; simulated in MuJoCo",
+ "fps": 50,
+ "episodes": 420,
+ "split": {
+  "unit": "episode (each episode is a new object instance with its own randomized hidden physics)",
+  "classifier_eval": "stratified 5-fold CV, see results/metrics.json"
+ },
+ "classes": [
+  "very_fragile",
+  "soft",
+  "fragile",
+  "sturdy"
+ ],
+ "action": {
+  "name": "p_cmd",
+  "definition": "absolute chamber-pressure command shared by the 3 fingers",
+  "unit": "kPa"
+ },
+ "episode_labels": [
+  "object",
+  "looks_like",
+  "true_class",
+  "prior_class",
+  "max_safe_force",
+  "physics{mass,mu,k_N_per_m,solref_tc,yaw_deg}",
+  "F_probe",
+  "plunger_F",
+  "F_target",
+  "outcome{success,crushed,lifted,slipped,dropped,no_contact,in_tray,failure,peak_force_true,peak_force_est}",
+  "boxes{pregrasp,grasp,lift}"
+ ],
+ "annotation_spec": {
+  "crushed": "60 ms (3-sample) moving average of the true grip force while held (grip..lower) > the object's allowable force",
+  "dropped": "lifted, then no finger contact (true force < 0.02 N) for 0.1 s during transport or lowering",
+  "slipped": "not lifted (the object stayed on the table)",
+  "success": "lifted, in the tray, not crushed",
+  "true_class": "handling class from the hidden physics (allowable force), not from appearance"
+ },
+ "features": {
+  "t": {
+   "dtype": "float32",
+   "shape": [
+    "T"
+   ],
+   "desc": "simulation time (grip to lower, 50 Hz)",
+   "unit": "s"
+  },
+  "phase": {
+   "dtype": "str",
+   "shape": [
+    "T"
+   ],
+   "desc": "grip / lift / transport / lower"
+  },
+  "probing": {
+   "dtype": "bool",
+   "shape": [
+    "T"
+   ],
+   "desc": "true while the finger probe (squeeze to 0.8 N) is active"
+  },
+  "p_cmd": {
+   "dtype": "float32",
+   "shape": [
+    "T"
+   ],
+   "desc": "action: chamber-pressure command shared by the 3 fingers",
+   "unit": "kPa",
+   "range": [
+    0,
+    80
+   ]
+  },
+  "p": {
+   "dtype": "float32",
+   "shape": [
+    "T"
+   ],
+   "desc": "pressure sensor reading (noise 0.2 kPa)",
+   "unit": "kPa",
+   "range": [
+    -2,
+    82
+   ]
+  },
+  "bend_model": {
+   "dtype": "float32",
+   "shape": [
+    "T"
+   ],
+   "desc": "free bend predicted by the actuator model for the measured pressure",
+   "unit": "deg",
+   "range": [
+    0,
+    120
+   ]
+  },
+  "bend_meas": {
+   "dtype": "float32",
+   "shape": [
+    "T",
+    3
+   ],
+   "desc": "bend sensor of each finger (noise 0.3 deg, 0.1 deg steps, 20 ms lag)",
+   "unit": "deg",
+   "range": [
+    -15,
+    120
+   ]
+  },
+  "bend_true": {
+   "dtype": "float32",
+   "shape": [
+    "T",
+    3
+   ],
+   "desc": "true total bend of each finger (sum of its 4 joint angles)",
+   "unit": "deg",
+   "range": [
+    -15,
+    120
+   ]
+  },
+  "f_est": {
+   "dtype": "float32",
+   "shape": [
+    "T"
+   ],
+   "desc": "grip force estimated from bend + skin location (no force sensor)",
+   "unit": "N",
+   "range": [
+    0,
+    50
+   ]
+  },
+  "f_true": {
+   "dtype": "float32",
+   "shape": [
+    "T"
+   ],
+   "desc": "true grip force: sum of normal contact forces fingers-object",
+   "unit": "N",
+   "range": [
+    0,
+    200
+   ]
+  },
+  "skin": {
+   "dtype": "float32",
+   "shape": [
+    "T",
+    24
+   ],
+   "desc": "fabric skin reading (sensor model: dead zone, noise, gain spread, crosstalk, lag, 12 bit, 8 N full scale)",
+   "unit": "N",
+   "range": [
+    0,
+    8
+   ]
+  },
+  "skin_true": {
+   "dtype": "float32",
+   "shape": [
+    "T",
+    24
+   ],
+   "desc": "true normal force on each taxel area",
+   "unit": "N",
+   "range": [
+    0,
+    200
+   ]
+  },
+  "plunger_ext": {
+   "dtype": "float32",
+   "shape": [
+    "P"
+   ],
+   "desc": "firmness plunger encoder (noise 2 um)",
+   "unit": "m",
+   "range": [
+    -0.001,
+    0.15
+   ]
+  },
+  "plunger_load": {
+   "dtype": "float32",
+   "shape": [
+    "P"
+   ],
+   "desc": "plunger load cell (noise 5 mN)",
+   "unit": "N",
+   "range": [
+    0,
+    5
+   ]
+  },
+  "plunger_load_true": {
+   "dtype": "float32",
+   "shape": [
+    "P"
+   ],
+   "desc": "true plunger tip force",
+   "unit": "N",
+   "range": [
+    0,
+    5
+   ]
+  },
+  "pregrasp_rgb": {
+   "dtype": "uint8",
+   "shape": [
+    144,
+    192,
+    3
+   ],
+   "desc": "wrist camera RGB"
+  },
+  "pregrasp_mask": {
+   "dtype": "bool",
+   "shape": [
+    144,
+    192
+   ],
+   "desc": "wrist camera: object mask (from the renderer's segmentation)"
+  },
+  "grasp_rgb": {
+   "dtype": "uint8",
+   "shape": [
+    144,
+    192,
+    3
+   ],
+   "desc": "close camera RGB"
+  },
+  "grasp_mask": {
+   "dtype": "bool",
+   "shape": [
+    144,
+    192
+   ],
+   "desc": "close camera: object mask (from the renderer's segmentation)"
+  },
+  "lift_rgb": {
+   "dtype": "uint8",
+   "shape": [
+    144,
+    192,
+    3
+   ],
+   "desc": "close camera RGB"
+  },
+  "lift_mask": {
+   "dtype": "bool",
+   "shape": [
+    144,
+    192
+   ],
+   "desc": "close camera: object mask (from the renderer's segmentation)"
+  },
+  "pregrasp_depth": {
+   "dtype": "float16",
+   "shape": [
+    144,
+    192
+   ],
+   "desc": "wrist camera depth",
+   "unit": "m"
+  },
+  "probe_features": {
+   "dtype": "float64",
+   "shape": [
+    10
+   ],
+   "desc": "finger-probe features (sim_mujoco/tactile.py PROBE_FEATS)"
+  },
+  "plunger_features": {
+   "dtype": "float64",
+   "shape": [
+    3
+   ],
+   "desc": "plunger features: slope k_p [N/mm], top height [m], indentation [m]"
+  },
+  "vision_features": {
+   "dtype": "float64",
+   "shape": [
+    5
+   ],
+   "desc": "mean r, g, b, area, aspect of the object mask in the wrist image"
+  }
+ },
+ "provenance": "generated by sim_mujoco/tactile_dataset.py generate --per-object 60 (seeds 1000+); simulator ground truth, no human labels"
+}

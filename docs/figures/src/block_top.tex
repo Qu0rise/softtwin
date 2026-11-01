@@ -1,0 +1,65 @@
+\documentclass[tikz,border=4pt]{standalone}
+\usepackage{luatexja-fontspec}
+\setmainjfont{Noto Sans CJK JP}
+\setsansfont{TeX Gyre Heros}
+\setsansjfont{Noto Sans CJK JP}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{amsmath,bm}
+\input{sl_style.tex}
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\tikzset{sname/.append style={font=\footnotesize}, pname/.append style={font=\footnotesize}, title/.append style={font=\small\bfseries}}
+\def\bw{24mm}\def\bh{20mm}
+% ---------------------------------------------------------------- blocks: a staircase from top-left to bottom-right,
+% so that every forward signal runs only to the right (the feedback is the one line that has to go back)
+\def\yA{0}\def\yB{-1.2}\def\yC{-2.4}\def\yD{-3.6}\def\yE{-4.8}
+\node[des, minimum width=\bw, minimum height=\bh] (A) at (3.2,\yA) {};
+\node[des, minimum width=\bw, minimum height=\bh] (B) at (7.2,\yB) {};
+\node[phy, minimum width=\bw, minimum height=\bh] (C) at (11.2,\yC) {};
+\node[sen, minimum width=\bw, minimum height=\bh] (D) at (15.2,\yD) {};
+\node[des, minimum width=\bw, minimum height=\bh] (E) at (19.2,\yE) {};
+% block texts (title + body), kept inside the block
+\def\body#1#2#3{\node[font=\footnotesize, align=center, text width=22mm] at (#1,#2-0.18) {#3};}
+\node[title] at (3.2,\yA+0.6) {判断};          \body{3.2}{\yA}{把持前に 1 回\\画像＋プランジャ\\→ 区分 $\hat c$}
+\node[title] at (7.2,\yB+0.6) {把持力制御器};  \body{7.2}{\yB}{50\,Hz・積分則\\接触時に\\積分器をリセット}
+\node[title] at (11.2,\yC+0.6) {プラント};     \body{11.2}{\yC}{空圧・人工筋肉\\指 3 本・物体\\MuJoCo\,/\,PhysX}
+\node[title] at (15.2,\yD+0.6) {センサ};       \body{15.2}{\yD}{内圧・指の曲げ\\布スキン 24 点\\雑音・遅れ}
+\node[title] at (19.2,\yE+0.6) {推定器};       \body{19.2}{\yE}{固有感覚で\\把持力 $\hat F$\\接触 $\kappa$}
+% ---------------------------------------------------------------- ports
+\node[port] (in1) at (0.45,1.9) {1};
+\node[pname, anchor=north] at (in1.south) {物体 $o$};
+\node[port] (in2) at (0.45,-0.5) {2};
+\node[pname, anchor=north] at (in2.south) {取扱い表 $H$};
+\node[port] (out1) at (22.4,-1.8) {1};
+\node[pname, anchor=north] at (out1.south) {物体の状態};
+\node[port] (out2) at (22.4,\yE) {2};
+\node[pname, anchor=north] at (out2.south) {推定値 $\hat{\bm y}$};
+% ---------------------------------------------------------------- signals (forward: right or down only)
+\coordinate (b1) at (1.4,1.9);
+\draw[-, line width=0.55pt] (in1.east) -- (b1);
+\node[dot] at (b1) {};
+\draw[sig] (b1) -- (1.4,0.5) -- (A.west |- 0,0.5);
+\draw[sig] (b1) -- (11.2,1.9) -- (C.north);
+\node[sname, anchor=south] at (6.3,1.9) {物体 $o$（質量・摩擦・剛性・形）};
+\draw[sig] (in2.east) -- (A.west |- in2.east);
+\draw[bus] (A.east |- 0,-0.6) -- node[sname, above=2pt] {$F^{*},\,\bar F$} (B.west |- 0,-0.6);
+\draw[sig] (B.east |- 0,-1.8) -- node[sname, above=1pt] {$p^{\mathrm{cmd}}$} (C.west |- 0,-1.8);
+\draw[bus] (C.east |- 0,-3.0) -- node[sname, above=2pt] {$p,\bm\theta,\bm f_c$} (D.west |- 0,-3.0);
+\draw[bus] (D.east |- 0,-4.2) -- node[sname, above=2pt] {$\tilde p,\tilde{\bm\theta},\tilde{\bm s}$} (E.west |- 0,-4.2);
+\draw[sig] (C.east |- 0,-1.8) -- node[sname, above=1pt, pos=0.5] {物体の位置・姿勢} (out1.west);
+% output and feedback (bus)
+\coordinate (b2) at (21.15,\yE);
+\draw[bus] (E.east) -- (out2.west);
+\node[dot] at (b2) {};
+\draw[bus] (b2) -- (21.15,-6.3) -- (5.55,-6.3) -- (5.55,-1.8) -- (B.west |- 0,-1.8);
+\node[sname, anchor=north] at (13.35,-6.35) {帰還 $\hat{\bm y}=(\tilde p,\hat F,\kappa)$　力センサの値は使わない};
+% legend
+\def\lg#1#2#3{\node[#1, minimum width=6mm, minimum height=3.5mm] at (#2,-7.35) {}; \node[font=\footnotesize, anchor=west] at (#2+0.4,-7.35) {#3};}
+\lg{des}{0.4}{本研究で設計・学習した部分}
+\lg{phy}{5.4}{物理（シミュレーション）}
+\lg{sen}{9.9}{センサのモデル（仮定の仕様）}
+\draw[sig] (14.8,-7.35) -- (15.6,-7.35); \node[font=\footnotesize, anchor=west] at (15.7,-7.35) {信号};
+\draw[bus] (16.8,-7.35) -- (17.6,-7.35); \node[font=\footnotesize, anchor=west] at (17.7,-7.35) {バス};
+\node[dot] at (19.0,-7.35) {}; \node[font=\footnotesize, anchor=west] at (19.2,-7.35) {分岐};
+\end{tikzpicture}
+\end{document}

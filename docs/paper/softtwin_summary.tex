@@ -1,0 +1,112 @@
+\documentclass[a4paper,landscape,10pt]{ltjsarticle}
+\usepackage{luatexja-fontspec}
+\setmainfont{TeX Gyre Heros}
+\setmainjfont{Noto Sans CJK JP}
+\usepackage{graphicx,xcolor,multicol,enumitem,booktabs,amsmath,amssymb,bm}
+\usepackage[margin=6.5mm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdfauthor={Qu0rise},pdftitle={SoftTwin 1 枚の要約},pdfsubject={Physical AI 講座 2026 応用編1 最終課題}}
+\graphicspath{{../figures/}}
+\definecolor{prop}{HTML}{2A78D6}
+\definecolor{sub}{HTML}{52514E}
+\definecolor{crit}{HTML}{D03B3B}
+\definecolor{ok}{HTML}{0A8A0A}
+\definecolor{drop}{HTML}{F5B21B}
+\setlist{nosep,leftmargin=1.1em}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\columnsep}{4.5mm}
+\renewcommand{\small}{\fontsize{8.7pt}{12.2pt}\selectfont}
+\renewcommand{\footnotesize}{\fontsize{7.6pt}{10.2pt}\selectfont}
+\renewcommand{\scriptsize}{\fontsize{6.8pt}{8.6pt}\selectfont}
+\newcommand{\hd}[1]{\vspace{1.0mm}{\large\bfseries\color{prop}#1}\par\vspace{0.4mm}}
+\newcommand{\sq}[1]{\textcolor{#1}{\rule{1.6mm}{1.6mm}}}
+\makeatletter
+\newcommand{\V}[1]{\@ifundefined{V@#1}{\textcolor{red}{??#1}}{\csname V@#1\endcsname}}
+\makeatother
+\input{numbers.tex}
+\providecommand{\AUTHORLINE}{Qu0rise}
+
+\begin{document}
+{\LARGE\bfseries SoftTwin：見た目が同じでも中身が違う食品を，力センサのない柔らかい指で壊さずにつかむ}\par\vspace{0.6mm}
+{\small\color{sub}\AUTHORLINE　Physical AI 講座 2026 応用編1 最終課題　コードとデータ：github.com/Qu0rise/softtwin　評価はすべてシミュレーション（MuJoCo，Q1 は Isaac Sim 5.0 / PhysX でも）\par}
+\vspace{0.8mm}\hrule\vspace{1.2mm}
+
+\noindent
+\begin{minipage}[t]{0.47\textwidth}\vspace{0pt}
+\includegraphics[width=\linewidth]{fig_block_top_poster.pdf}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.505\textwidth}\vspace{0pt}
+{\normalsize\bfseries 見た目が同じ過熟トマト・過熟いちご}\par\vspace{0.3mm}
+{\Large\bfseries 成功 \textcolor{crit}{0\,\%（全数破損）}→ \textcolor{ok}{\V{q2.plunger.la}\,\%（破損 \V{q2.plunger.la.cr}）}}\par\vspace{0.6mm}
+\includegraphics[width=\linewidth]{teaser_strip.png}\par
+{\footnotesize\color{sub}左 3 コマ：見た目で「トマト＝2.2\,N」と決めて潰す（赤枠，許容力 2.0\,N）．右 3 コマ：上面を 0.3\,N だけ押して「軟」と判定し，1.55\,N で運ぶ（緑枠）．\par}\par\vspace{0.6mm}
+{\small 力センサなしの閉ループで，基本 5 物体の成功 \textbf{\V{q1.learned.succ}\,\%}・破損 \textbf{0/\V{q1.n}}．\par}
+\end{minipage}
+\vspace{1.2mm}\hrule\vspace{0.6mm}
+
+\begin{multicols*}{4}
+\hd{問題と問い}
+{\small 過熟の中玉トマトは，カメラには普通のトマトに見える．硬さは画像に映らず，指に力センサはない．
+\begin{itemize}
+\item \textbf{Q1} 指の曲げと内圧だけで，潰さず落とさない力で握れるか
+\item \textbf{Q2} 見た目が同じ物体を，握る前に見分けられるか．指で触るだけで足りるか
+\item \textbf{Q3} 人手のラベル付けなしで，判断の学習に使えるデータを作れるか
+\end{itemize}\par}
+
+\hd{仕組み}
+{\small\raggedright
+\begin{enumerate}
+\item \textbf{共有する制御コア}：個体・筋肉・センサ・推定・制御・成否の判定を一つにまとめ，MuJoCo と PhysX は動力学だけを受け持つ
+\item \textbf{物理を文献値に}：熟したトマト 1.5，過熟 0.6\,N/mm（文献のレッド 1.16〜緑熟 3.58\,N/mm から設定）．接触剛性を測って合わせ込み，目標との差を \V{cal.mj.maxdev} 以内にした
+\item \textbf{作用点を触覚で補う推定}：$\hat F_f=k_b\Delta\theta_f/\bar\Lambda_f$．$\bar\Lambda_f$ はスキンの出力で重み付けたてこの和
+\item \textbf{硬さプランジャ}：直径 8\,mm の平型先端で 0.3\,N まで押し，傾き $k_p$ を測る．画像と合わせて取扱い区分（極脆・軟・脆・頑丈）を決める
+\end{enumerate}\par}
+
+\columnbreak
+\hd{Q1：力センサなしで握る}
+\includegraphics[width=\linewidth]{poster_q1.png}\par
+{\footnotesize\color{sub}\sq{ok} 成功　\sq{drop} 滑り・落下　\sq{crit} 破損．ひげは Wilson 95\,\% 区間．\par}\par
+{\small 直線の筋肉モデルはいちごを全数潰す．履歴を持たないグレーボックスは力を 1 割以上大きく見積もって弱く握り，豆腐を落とす．力の推定誤差は \V{q1.learned.mae}\,N．\par}
+
+
+\hd{エンジンを替えても}
+{\small 制御コアはそのまま，動力学だけを PhysX に替えた（各方式 $n=\V{px.n}$）．学習モデルの閉ループは \V{px.learned.succ}\,\%・破損 \V{px.learned.cr}．直線モデルの成否は同じ個体で \V{s2s.affine.same} 一致し（$\kappa_{\mathrm C}=\V{s2s.affine.kappa}$），いちごを PhysX でも全数潰した．同じ個体を両エンジンで突き合わせられるので，差の出どころ（豆腐の角の接触，搬送の加減速）まで追える．\par}
+
+
+\columnbreak
+
+\hd{Q2：指で触るだけでは足りない}
+\includegraphics[width=\linewidth]{poster_map.png}\par
+{\small 剛性比 2.5 で，指プローブの正解率はトマト \V{pm.tomato.finger}\,\%・いちご \V{pm.strawberry.finger}\,\%．指は果実の 16〜61 倍柔らかく，果実のへこみが指のたわみに埋もれる．プランジャなら比 2 以上で \V{pm.tomato.plunger}\,\%．\par}
+\par\vspace{0.6mm}
+\includegraphics[width=\linewidth]{poster_q2.png}\par
+{\small 失敗 \V{fail.plunger.n} 件は，正解の区分を与えても同じ試行で起きる落下だった．判断の誤りは 0 件で，残りは握り方（重い過熟トマト，指のあいだから抜ける過熟いちご）．目標の 85\,\% には未達．重さから目標の下限を上げると，開発に使っていないシードで \V{ho.q2.mass.la}\,\%（破損 0）．\par}
+
+\columnbreak
+\hd{大きさが変わったら}
+{\small 内圧表（開ループ）は，調整に使った大きさなら基本 5 物体で \V{q1.recipe.succ}\,\% と強い．寸法 1.2 倍では過熟トマトを \V{ss.recipe.1.2.tomato_overripe.cr} 回潰した．閉ループは潰さないが，重くなった物を落とす．大きくなって変わるのは「落とさない力の下限」で，1.2 倍の過熟トマトに要る \V{ss.mass.Fmin.tomato_overripe.1.2}\,N は許容力 2.0\,N を超える．\par}
+
+\hd{Q3：データ}
+{\small\raggedright \V{ds.n} 試行・\V{ds.samples} サンプルを 2 CPU で \V{ds.min} 分．検証器で違反 0．区分の正解率は画像のみ \V{cv.vision}\,\%，画像＋プランジャ \V{cv.plunger}\,\%．\par}
+
+\hd{要求}
+{\scriptsize
+\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}p{31mm}l@{}}
+\toprule
+R1 筋肉モデルの RMSE $\le$3° & \V{req.R1} \\
+R2 力の推定誤差 $\le$0.2\,N & \V{req.R2} \\
+R3 5 物体の成功 $\ge$90\,\% & \V{req.R3} \\
+R4 5 物体の破損 $\le$5\,\%（上端） & \V{req.R4} \\
+R5 見た目が同じ物体 $\ge$85\,\% & \V{req.R5} \\
+R6 7 物体の破損 $\le$5\,\%（上端） & \V{req.R6} \\
+R7 区分の正解率 $\ge$95\,\% & \V{req.R7} \\
+R8 筋肉 $\pm$20\,\% で $\ge$90\,\% & \V{req.R8} \\
+\bottomrule
+\end{tabular}\par
+{\color{sub}[ ] は Wilson 95\,\% 区間．比較は同じ試行どうしの McNemar 検定（Holm 補正）．}\par}
+
+\hd{限界}
+{\small 筋肉とセンサは仮定した特性のモデルで，実機は未製作．許容力は卵以外は仮定．PhysX の評価は Q1 のみ．次は人工筋肉 1 本の内圧と曲げを記録してモデルを学び直し，同じ評価を実機で行う．\par}
+\end{multicols*}
+\end{document}

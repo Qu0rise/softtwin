@@ -1,0 +1,38 @@
+{
+ "source": "synthetic (SyntheticMuscle, NOT real hardware)",
+ "test_trajectories": 20,
+ "grip_range_kPa": [
+  14.44,
+  24.69
+ ],
+ "affine": {
+  "rmse_deg": 13.63,
+  "rmse_grip_deg": 15.89,
+  "bias_grip_deg": -11.46,
+  "grasp_bias_deg": -7.81
+ },
+ "static": {
+  "rmse_deg": 8.96,
+  "rmse_grip_deg": 10.32,
+  "bias_grip_deg": -1.72,
+  "grasp_bias_deg": 2.16
+ },
+ "greybox": {
+  "rmse_deg": 1.87,
+  "rmse_grip_deg": 1.67,
+  "bias_grip_deg": -0.52,
+  "grasp_bias_deg": 1.11
+ },
+ "greybox_play": {
+  "rmse_deg": 1.16,
+  "rmse_grip_deg": 0.8,
+  "bias_grip_deg": -0.27,
+  "grasp_bias_deg": -0.3
+ },
+ "learned": {
+  "rmse_deg": 2.4,
+  "rmse_grip_deg": 2.27,
+  "bias_grip_deg": -1.77,
+  "grasp_bias_deg": -1.26
+ }
+}

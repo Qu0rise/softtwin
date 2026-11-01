@@ -1,0 +1,47 @@
+{
+ "per_object": {
+  "strawberry": {
+   "target_N": 2.2,
+   "dF_dp_N_per_kPa": 0.26,
+   "rise_to_80pct_s": 1.87,
+   "transport_force_over_target": 0.995
+  },
+  "egg": {
+   "target_N": 3.0,
+   "dF_dp_N_per_kPa": 0.255,
+   "rise_to_80pct_s": 3.07,
+   "transport_force_over_target": 0.997
+  },
+  "tofu": {
+   "target_N": 2.2,
+   "dF_dp_N_per_kPa": 0.245,
+   "rise_to_80pct_s": 2.22,
+   "transport_force_over_target": 0.978
+  },
+  "tomato": {
+   "target_N": 2.2,
+   "dF_dp_N_per_kPa": 0.261,
+   "rise_to_80pct_s": 1.93,
+   "transport_force_over_target": 0.968
+  },
+  "bolt": {
+   "target_N": 3.0,
+   "dF_dp_N_per_kPa": 0.22,
+   "rise_to_80pct_s": 3.2,
+   "transport_force_over_target": 1.039
+  }
+ },
+ "dF_dp_mean": 0.248,
+ "K_i": 4.0,
+ "tau_closed_loop_s": 1.01,
+ "supply_tau_s": 0.25,
+ "rate_limit_up_kPa_s": 3.0,
+ "force_slew_N_s": 0.74,
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ]
+}

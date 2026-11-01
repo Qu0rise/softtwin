@@ -1,0 +1,11 @@
+{
+ "params": {
+  "p0": 6.1868,
+  "A": 107.409,
+  "P": 28.5676,
+  "B": 0.2094,
+  "tau": 0.1335
+ },
+ "source": "synthetic (SyntheticMuscle, NOT real hardware)",
+ "model": ""
+}

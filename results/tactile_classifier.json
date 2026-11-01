@@ -1,0 +1,73 @@
+{
+ "n_train": 420,
+ "classes": [
+  "very_fragile",
+  "soft",
+  "fragile",
+  "sturdy"
+ ],
+ "models": {
+  "vision": {
+   "features": [
+    "r",
+    "g",
+    "b",
+    "area",
+    "aspect"
+   ]
+  },
+  "finger": {
+   "features": [
+    "r",
+    "g",
+    "b",
+    "area",
+    "aspect",
+    "compliance",
+    "compliance_sd",
+    "bend_contact",
+    "p_contact",
+    "dp_probe",
+    "tax_sum",
+    "n_active",
+    "seg_centroid",
+    "tip_ratio",
+    "settle_steps"
+   ]
+  },
+  "plunger": {
+   "features": [
+    "r",
+    "g",
+    "b",
+    "area",
+    "aspect",
+    "k_plunger",
+    "top_height",
+    "indent_end"
+   ]
+  },
+  "all": {
+   "features": [
+    "r",
+    "g",
+    "b",
+    "area",
+    "aspect",
+    "compliance",
+    "compliance_sd",
+    "bend_contact",
+    "p_contact",
+    "dp_probe",
+    "tax_sum",
+    "n_active",
+    "seg_centroid",
+    "tip_ratio",
+    "settle_steps",
+    "k_plunger",
+    "top_height",
+    "indent_end"
+   ]
+  }
+ }
+}
